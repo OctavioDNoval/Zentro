@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Download } from 'lucide-react'
 
 function InstallPWA() {
   const [deferredPrompt, setDeferredPrompt] = useState(null)
@@ -35,8 +36,10 @@ function InstallPWA() {
   return (
     <button
       onClick={handleInstall}
-      className="fixed bottom-4 right-4 bg-indigo-600 text-white px-5 py-3 rounded-xl shadow-lg hover:bg-indigo-700 transition cursor-pointer"
+      className="fixed bottom-20 right-4 flex items-center gap-2 text-white px-4 py-2.5 rounded-xl shadow-lg transition cursor-pointer text-sm font-medium z-20"
+      style={{ background: 'var(--color-accent)' }}
     >
+      <Download size={16} />
       Instalar app
     </button>
   )

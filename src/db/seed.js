@@ -18,7 +18,9 @@ export async function seedDatabase() {
   const count = await db.categorias.count()
   if (count > 0) return
 
-  await db.categorias.bulkAdd(CATEGORIAS_PREDEFINIDAS)
+  for (const cat of CATEGORIAS_PREDEFINIDAS) {
+    await db.categorias.add(cat)
+  }
 
   await db.estado_cuenta.put({ id: 1, total_en_mano: 0, updatedAt: new Date() })
 }

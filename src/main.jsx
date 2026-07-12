@@ -6,7 +6,9 @@ import App from './App.jsx'
 import { seedDatabase } from './db/seed.js'
 import { ejecutarCicloMensual } from './db/ciclo-mensual.js'
 
-seedDatabase().then(() => ejecutarCicloMensual())
+seedDatabase()
+  .then(() => ejecutarCicloMensual())
+  .catch((err) => console.error('Error en inicialización:', err))
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

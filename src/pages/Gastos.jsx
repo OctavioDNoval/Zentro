@@ -1,16 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Plus, Tag, Pencil } from 'lucide-react'
 import db from '../db/index.js'
 import GastoDiarioModal from '../components/GastoDiarioModal.jsx'
 import GastoFijoModal from '../components/GastoFijoModal.jsx'
 import GastoEditModal from '../components/GastoEditModal.jsx'
 import CategoriaModal from '../components/CategoriaModal.jsx'
 
-function formatearMoneda(n) {
-  return '$' + (n ?? 0).toLocaleString('es-AR')
-}
+function formatearMoneda(n) { return '$' + (n ?? 0).toLocaleString('es-AR') }
 
 const etiquetaTipo = { suscripcion: 'Suscripción', servicio: 'Servicio', cuotas: 'Cuotas' }
-const colorTipo = { suscripcion: 'bg-blue-100 text-blue-700', servicio: 'bg-amber-100 text-amber-700', cuotas: 'bg-purple-100 text-purple-700' }
+const colorTipo = { suscripcion: { bg: '#dbeafe', text: '#1d4ed8' }, servicio: { bg: '#fef3c7', text: '#b45309' }, cuotas: { bg: '#ede9fe', text: '#6d28d9' } }
 
 function Gastos() {
   const [data, setData] = useState({ gastosDiarios: [], gastosFijos: [], categorias: [] })
@@ -21,60 +20,54 @@ function Gastos() {
 
   const cargar = useCallback(async () => {
     const hoy = new Date()
-    const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
-    const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
-
+    const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+    const fin = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
     const [gastosDiarios, gastosFijos, categorias] = await Promise.all([
-      db.gastos_diarios.where('fecha').between(inicioMes, finMes).reverse().toArray(),
+      db.gastos_diarios.where('fecha').between(inicio, fin).reverse().toArray(),
       db.gastos_fijos.where({ activo: true }).toArray(),
       db.categorias.toArray(),
     ])
-
     setData({ gastosDiarios, gastosFijos, categorias })
   }, [])
 
   useEffect(() => { cargar() }, [cargar])
 
-  const getCategoriaNombre = (id) => data.categorias.find((c) => c.id === id)?.nombre ?? 'Sin categoría'
+  const getCat = (id) => data.categorias.find((c) => c.id === id)?.nombre ?? 'Sin categoría'
 
   return (
     <div className="space-y-6">
       <section>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-gray-700">Gastos del mes</h3>
+          <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Gastos del mes</h3>
           <div className="flex gap-2">
-            <button
-              onClick={() => setModalCategoria(true)}
-              className="text-gray-400 text-xs hover:text-gray-600 cursor-pointer"
-            >
-              + Categoría
+            <button onClick={() => setModalCategoria(true)}
+              className="flex items-center gap-1 text-xs cursor-pointer"
+              style={{ color: 'var(--color-text-secondary)' }}>
+              <Tag size={12} /> Categoría
             </button>
-            <button
-              onClick={() => setModalDiario(true)}
-              className="text-indigo-600 text-xs font-medium hover:text-indigo-800 cursor-pointer"
-            >
-              + Agregar
+            <button onClick={() => setModalDiario(true)}
+              className="flex items-center gap-1 text-xs font-medium cursor-pointer"
+              style={{ color: 'var(--color-accent)' }}>
+              <Plus size={14} /> Agregar
             </button>
           </div>
         </div>
-
         {data.gastosDiarios.length === 0 ? (
-          <p className="text-xs text-gray-400">Sin gastos este mes</p>
+          <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Sin gastos este mes</p>
         ) : (
           <div className="space-y-2">
             {data.gastosDiarios.map((g) => (
-              <button
-                key={g.id}
-                onClick={() => setEditGasto(g)}
-                className="w-full text-left bg-white rounded-lg px-3 py-2.5 border border-gray-100 flex justify-between items-center hover:border-gray-200 transition cursor-pointer"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-800 truncate">{g.concepto}</p>
-                  <p className="text-xs text-gray-400">
-                    {getCategoriaNombre(g.categoriaId)} · {new Date(g.fecha).toLocaleDateString('es-AR')}
+              <button key={g.id} onClick={() => setEditGasto(g)}
+                className="w-full text-left rounded-lg px-3 py-2.5 border flex items-center gap-3 transition cursor-pointer hover:opacity-80"
+                style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+                <Pencil size={14} className="shrink-0" style={{ color: 'var(--color-text-secondary)' }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>{g.concepto}</p>
+                  <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                    {getCat(g.categoriaId)} · {new Date(g.fecha).toLocaleDateString('es-AR')}
                   </p>
                 </div>
-                <p className="text-sm font-semibold text-rose-500 ml-3">{formatearMoneda(g.monto)}</p>
+                <span className="text-sm font-semibold shrink-0" style={{ color: 'var(--color-negative)' }}>{formatearMoneda(g.monto)}</span>
               </button>
             ))}
           </div>
@@ -83,36 +76,39 @@ function Gastos() {
 
       <section>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-gray-700">Gastos fijos</h3>
-          <button
-            onClick={() => setModalFijo(true)}
-            className="text-indigo-600 text-xs font-medium hover:text-indigo-800 cursor-pointer"
-          >
-            + Agregar
+          <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Gastos fijos</h3>
+          <button onClick={() => setModalFijo(true)}
+            className="flex items-center gap-1 text-xs font-medium cursor-pointer"
+            style={{ color: 'var(--color-accent)' }}>
+            <Plus size={14} /> Agregar
           </button>
         </div>
         {data.gastosFijos.length === 0 ? (
-          <p className="text-xs text-gray-400">Sin gastos fijos</p>
+          <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Sin gastos fijos</p>
         ) : (
           <div className="space-y-2">
-            {data.gastosFijos.map((g) => (
-              <div key={g.id} className="bg-white rounded-lg px-3 py-2.5 border border-gray-100 flex justify-between items-center">
-                <div>
-                  <p className="text-sm font-medium text-gray-800">{g.nombre}</p>
-                  <div className="flex gap-1.5 mt-1">
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${colorTipo[g.tipo]}`}>
-                      {etiquetaTipo[g.tipo]}
-                    </span>
-                    {g.tipo === 'cuotas' && (
-                      <span className="text-[10px] text-gray-400">
-                        {g.cuotas_pagadas}/{g.total_cuotas}
+            {data.gastosFijos.map((g) => {
+              const tc = colorTipo[g.tipo]
+              return (
+                <div key={g.id} className="rounded-lg px-3 py-2.5 border flex justify-between items-center"
+                  style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>{g.nombre}</p>
+                    <div className="flex gap-1.5 mt-1">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: tc.bg, color: tc.text }}>
+                        {etiquetaTipo[g.tipo]}
                       </span>
-                    )}
+                      {g.tipo === 'cuotas' && (
+                        <span className="text-[10px]" style={{ color: 'var(--color-text-secondary)' }}>
+                          {g.cuotas_pagadas}/{g.total_cuotas}
+                        </span>
+                      )}
+                    </div>
                   </div>
+                  <span className="text-sm font-semibold" style={{ color: 'var(--color-negative)' }}>{formatearMoneda(g.monto)}</span>
                 </div>
-                <p className="text-sm font-semibold text-rose-500">{formatearMoneda(g.monto)}</p>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </section>

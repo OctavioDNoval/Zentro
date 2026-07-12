@@ -1,3 +1,5 @@
+import { X } from 'lucide-react'
+
 function Modal({ isOpen, onClose, title, children }) {
   if (!isOpen) return null
 
@@ -7,16 +9,18 @@ function Modal({ isOpen, onClose, title, children }) {
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] overflow-y-auto"
+        className="w-full max-w-lg rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] overflow-y-auto"
+        style={{ background: 'var(--color-surface)' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>{title}</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl leading-none cursor-pointer"
+            className="cursor-pointer"
+            style={{ color: 'var(--color-text-secondary)' }}
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
         {children}

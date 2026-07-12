@@ -1,66 +1,57 @@
 import { useState, useEffect, useCallback } from 'react'
+import { TrendingUp, TrendingDown, Wallet } from 'lucide-react'
 import db from '../db/index.js'
 
 const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
-function formatearMoneda(n) {
-  return '$' + (n ?? 0).toLocaleString('es-AR')
-}
-
-function formatearMes(mesStr) {
-  const [y, m] = mesStr.split('-')
-  return `${meses[Number(m) - 1]} ${y}`
-}
+function formatearMoneda(n) { return '$' + (n ?? 0).toLocaleString('es-AR') }
+const formatearMes = (s) => { const [y, m] = s.split('-'); return `${meses[Number(m) - 1]} ${y}` }
 
 function Dashboard() {
   const [resumenes, setResumenes] = useState([])
 
   const cargar = useCallback(async () => {
-    const data = await db.resumen_mensual
-      .orderBy('mes')
-      .reverse()
-      .toArray()
-    setResumenes(data)
+    setResumenes(await db.resumen_mensual.orderBy('mes').reverse().toArray())
   }, [])
 
   useEffect(() => { cargar() }, [cargar])
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-800">Historial mensual</h2>
-
+      <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Historial mensual</h2>
       {resumenes.length === 0 ? (
-        <p className="text-sm text-gray-400">Todavía no hay cierres de mes</p>
+        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Todavía no hay cierres de mes</p>
       ) : (
         <div className="space-y-3">
           {resumenes.map((r) => (
-            <div key={r.id} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-              <h3 className="text-sm font-semibold text-gray-800 mb-3">{formatearMes(r.mes)}</h3>
-
+            <div key={r.id} className="rounded-xl p-4 border" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+              <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text)' }}>{formatearMes(r.mes)}</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Ingresos fijos</span>
-                  <span className="font-medium text-emerald-600">{formatearMoneda(r.total_ingresos_fijos)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Ingresos</span>
-                  <span className="font-medium text-emerald-600">{formatearMoneda(r.total_ingresos_efimeros)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Gastos fijos</span>
-                  <span className="font-medium text-rose-500">{formatearMoneda(r.total_gastos_fijos)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Gastos diarios</span>
-                  <span className="font-medium text-rose-500">{formatearMoneda(r.total_gastos_diarios)}</span>
-                </div>
+                {[
+                  { label: 'Ingresos fijos', value: r.total_ingresos_fijos, color: 'var(--color-positive)', icon: TrendingUp },
+                  { label: 'Ingresos', value: r.total_ingresos_efimeros, color: 'var(--color-positive)', icon: TrendingUp },
+                  { label: 'Gastos fijos', value: r.total_gastos_fijos, color: 'var(--color-negative)', icon: TrendingDown },
+                  { label: 'Gastos diarios', value: r.total_gastos_diarios, color: 'var(--color-negative)', icon: TrendingDown },
+                ].map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <div key={item.label} className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Icon size={12} style={{ color: item.color }} />
+                        <span style={{ color: 'var(--color-text-secondary)' }}>{item.label}</span>
+                      </div>
+                      <span className="font-medium" style={{ color: item.color }}>{formatearMoneda(item.value)}</span>
+                    </div>
+                  )
+                })}
               </div>
-
-              <hr className="my-2 border-gray-100" />
-
-              <div className="flex justify-between text-sm font-semibold">
-                <span className="text-gray-600">Total en mano</span>
-                <span className={r.total_en_mano >= 0 ? 'text-indigo-600' : 'text-rose-600'}>
+              <hr className="my-2" style={{ borderColor: 'var(--color-border)' }} />
+              <div className="flex items-center justify-between text-sm font-semibold">
+                <div className="flex items-center gap-1.5">
+                  <Wallet size={14} style={{ color: 'var(--color-accent)' }} />
+                  <span style={{ color: 'var(--color-text-secondary)' }}>Total en mano</span>
+                </div>
+                <span style={{ color: r.total_en_mano >= 0 ? 'var(--color-accent)' : 'var(--color-negative)' }}>
                   {formatearMoneda(r.total_en_mano)}
                 </span>
               </div>
