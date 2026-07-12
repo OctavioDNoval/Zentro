@@ -20,9 +20,8 @@ function Layout() {
         className="flex items-center justify-between px-4 py-3 sticky top-0 z-10 border-b"
         style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
       >
-        <span className="text-lg font-bold" style={{ color: 'var(--color-accent)' }}>
-          Zentro
-        </span>
+        <img src="/logo_minimalista_claro.png" alt="Zentro" className="h-8 dark:hidden" />
+        <img src="/logo_minimalista_oscuro.png" alt="Zentro" className="h-8 hidden dark:block" />
         <button
           onClick={() => setSettingsOpen(true)}
           className="cursor-pointer"

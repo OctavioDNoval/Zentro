@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 
-function SplashScreen({ onFinish }) {
+function SplashScreen({ dbReady, onFinish }) {
   const [phase, setPhase] = useState('enter')
 
   useEffect(() => {
     requestAnimationFrame(() => setPhase('idle'))
-    const idleTimer = setTimeout(() => setPhase('exit'), 1200)
-    const exitTimer = setTimeout(() => onFinish?.(), 1700)
-    return () => { clearTimeout(idleTimer); clearTimeout(exitTimer) }
+    const minDuration = new Promise(resolve => setTimeout(resolve, 1000))
+    Promise.all([minDuration, dbReady]).then(() => {
+      setPhase('exit')
+      setTimeout(() => onFinish?.(), 500)
+    })
   }, [])
 
   return (

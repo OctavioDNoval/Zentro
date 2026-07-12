@@ -5,11 +5,11 @@ function Modal({ isOpen, onClose, title, children }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
+      className="fixed inset-0 z-50 grid place-items-center bg-black/40"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] overflow-y-auto"
+        className="w-full max-w-lg rounded-2xl p-5 mx-4 my-8 max-h-[85vh] overflow-y-auto"
         style={{ background: 'var(--color-surface)' }}
         onClick={(e) => e.stopPropagation()}
       >

@@ -6,14 +6,14 @@ import App from './App.jsx'
 import { seedDatabase } from './db/seed.js'
 import { ejecutarCicloMensual } from './db/ciclo-mensual.js'
 
-seedDatabase()
+const dbReady = seedDatabase()
   .then(() => ejecutarCicloMensual())
   .catch((err) => console.error('Error en inicialización:', err))
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <App dbReady={dbReady} />
     </BrowserRouter>
   </StrictMode>,
 )

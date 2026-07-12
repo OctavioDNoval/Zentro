@@ -17,14 +17,14 @@ function Dashboard() {
   useEffect(() => { cargar() }, [cargar])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in-up">
       <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Historial mensual</h2>
       {resumenes.length === 0 ? (
         <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Todavía no hay cierres de mes</p>
       ) : (
         <div className="space-y-3">
-          {resumenes.map((r) => (
-            <div key={r.id} className="rounded-xl p-4 border" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+          {resumenes.map((r, i) => (
+            <div key={r.id} className="rounded-xl p-4 border animate-fade-in-up" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', animationDelay: `${i * 0.08}s` }}>
               <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text)' }}>{formatearMes(r.mes)}</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                 {[

@@ -3,10 +3,16 @@ import { Plus, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
 import Modal from './Modal.jsx'
 
+async function actualizarTotal(delta) {
+  const estado = await db.estado_cuenta.get(1)
+  await db.estado_cuenta.update(1, { total_en_mano: (estado?.total_en_mano || 0) + delta, updatedAt: new Date().toISOString() })
+}
+
 function IngresoFijoModal({ isOpen, onClose, onSaved }) {
   const [nombre, setNombre] = useState('')
   const [monto, setMonto] = useState('')
   const [diaCobro, setDiaCobro] = useState('1')
+  const [sumarAhora, setSumarAhora] = useState(false)
   const [error, setError] = useState('')
 
   const handleSubmit = async (e) => {
@@ -15,7 +21,8 @@ function IngresoFijoModal({ isOpen, onClose, onSaved }) {
     setError('')
     try {
       await db.ingresos_fijos.add({ nombre, monto: Number(monto), dia_cobro: Number(diaCobro), activo: 1, createdAt: new Date().toISOString() })
-      setNombre(''); setMonto(''); setDiaCobro('1')
+      if (sumarAhora) await actualizarTotal(Number(monto))
+      setNombre(''); setMonto(''); setDiaCobro('1'); setSumarAhora(false)
       await onSaved?.()
       onClose()
     } catch (err) {
@@ -39,6 +46,11 @@ function IngresoFijoModal({ isOpen, onClose, onSaved }) {
             className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2"
             style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
         </div>
+        <label className="flex items-center gap-2 text-xs cursor-pointer" style={{ color: 'var(--color-text-secondary)' }}>
+          <input type="checkbox" checked={sumarAhora} onChange={(e) => setSumarAhora(e.target.checked)}
+            className="accent-indigo-600 w-4 h-4 rounded cursor-pointer" />
+          Sumar al disponible ahora — si no, se suma el 1 del próximo mes
+        </label>
         {error && (
           <div className="flex items-center gap-2 text-xs rounded-lg px-3 py-2" style={{ background: 'var(--color-negative)', color: '#fff' }}>
             <AlertCircle size={14} /> {error}

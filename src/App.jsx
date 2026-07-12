@@ -7,7 +7,7 @@ import Dashboard from './pages/Dashboard.jsx'
 import SplashScreen from './components/SplashScreen.jsx'
 import InstallPWA from './components/InstallPWA.jsx'
 
-function App() {
+function App({ dbReady }) {
   const [showSplash, setShowSplash] = useState(true)
 
   useEffect(() => {
@@ -17,7 +17,7 @@ function App() {
     }
   }, [])
 
-  if (showSplash) return <SplashScreen onFinish={() => setShowSplash(false)} />
+  if (showSplash) return <SplashScreen dbReady={dbReady} onFinish={() => setShowSplash(false)} />
 
   return (
     <>
