@@ -44,6 +44,7 @@ function Gastos() {
 
   return (
     <div className="space-y-6 animate-fade-in-up">
+      <h1 className="text-3xl font-extrabold tracking-tight text-center" style={{ color: 'var(--color-accent)' }}>Gastos</h1>
       <section>
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Gastos fijos</h3>

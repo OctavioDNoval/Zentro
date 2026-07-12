@@ -73,7 +73,7 @@ function Layout() {
                 }}
               >
                 <Icon size={16} />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span className={isActive ? 'inline' : 'hidden sm:inline'}>{tab.label}</span>
               </button>
             )
           })}

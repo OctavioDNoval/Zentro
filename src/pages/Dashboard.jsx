@@ -18,6 +18,7 @@ function Dashboard() {
 
   return (
     <div className="space-y-4 animate-fade-in-up">
+      <h1 className="text-3xl font-extrabold tracking-tight text-center" style={{ color: 'var(--color-accent)' }}>Dashboard</h1>
       <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Historial mensual</h2>
       {resumenes.length === 0 ? (
         <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Todavía no hay cierres de mes</p>

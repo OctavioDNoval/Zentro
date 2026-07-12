@@ -5,6 +5,7 @@ import IngresoFijoModal from '../components/IngresoFijoModal.jsx'
 import IngresoEfimeroModal from '../components/IngresoEfimeroModal.jsx'
 import IngresoFijoEditModal from '../components/IngresoFijoEditModal.jsx'
 import IngresoEfimeroEditModal from '../components/IngresoEfimeroEditModal.jsx'
+import AnimatedNumber from '../components/AnimatedNumber.jsx'
 
 const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
@@ -46,6 +47,7 @@ function Plantilla() {
 
   return (
     <div className="space-y-5 animate-fade-in-up">
+      <h1 className="text-3xl font-extrabold tracking-tight text-center" style={{ color: 'var(--color-accent)' }}>Plantilla</h1>
       <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>{mesActual}</h2>
 
       <div className="grid grid-cols-3 gap-3">
@@ -61,7 +63,7 @@ function Plantilla() {
                 <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{card.label}</span>
                 <Icon size={14} style={{ color: card.color }} />
               </div>
-              <p className="text-sm font-bold" style={{ color: card.color }}>{formatearMoneda(card.value)}</p>
+              <p className="text-sm font-bold" style={{ color: card.color }}><AnimatedNumber value={card.value} /></p>
             </div>
           )
         })}
