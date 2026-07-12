@@ -5,7 +5,6 @@ import Plantilla from './pages/Plantilla.jsx'
 import Gastos from './pages/Gastos.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import SplashScreen from './components/SplashScreen.jsx'
-import InstallPWA from './components/InstallPWA.jsx'
 
 function App({ dbReady }) {
   const [showSplash, setShowSplash] = useState(true)
@@ -28,7 +27,6 @@ function App({ dbReady }) {
           <Route path="dashboard" element={<Dashboard />} />
         </Route>
       </Routes>
-      <InstallPWA />
     </>
   )
 }

@@ -1,7 +1,9 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Wallet, CreditCard, BarChart3, Settings } from 'lucide-react'
+import { Wallet, CreditCard, BarChart3, Settings, Plus } from 'lucide-react'
 import { useState } from 'react'
+import InstallPWA from './InstallPWA.jsx'
 import SettingsModal from './SettingsModal.jsx'
+import GastoDiarioModal from './GastoDiarioModal.jsx'
 
 const tabs = [
   { path: '/', label: 'Plantilla', icon: Wallet },
@@ -13,6 +15,7 @@ function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [gastoModalOpen, setGastoModalOpen] = useState(false)
 
   return (
     <div className="flex flex-col min-h-svh" style={{ background: 'var(--color-bg)' }}>
@@ -34,6 +37,17 @@ function Layout() {
       <main className="flex-1 overflow-y-auto px-4 py-4 pb-24">
         <Outlet />
       </main>
+
+      <div className="fixed bottom-20 right-4 z-20 flex flex-col items-end gap-3">
+        <InstallPWA />
+        <button
+          onClick={() => setGastoModalOpen(true)}
+          className="flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition cursor-pointer"
+          style={{ background: '#ea580c' }}
+        >
+          <Plus size={24} color="#fff" />
+        </button>
+      </div>
 
       <nav className="fixed bottom-0 left-0 right-0 flex justify-center pb-3 pt-1 z-10 pointer-events-none">
         <div
@@ -67,6 +81,7 @@ function Layout() {
       </nav>
 
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <GastoDiarioModal isOpen={gastoModalOpen} onClose={() => setGastoModalOpen(false)} onSaved={() => setGastoModalOpen(false)} />
     </div>
   )
 }

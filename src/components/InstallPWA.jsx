@@ -36,7 +36,7 @@ function InstallPWA() {
   }
 
   return (
-    <div className="fixed bottom-20 right-4 z-20 flex flex-col items-end gap-2">
+    <>
       {showTip && (
         <div className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg shadow-lg"
           style={{ background: 'var(--color-accent-light)', color: 'var(--color-accent)' }}>
@@ -52,7 +52,7 @@ function InstallPWA() {
         <Download size={16} />
         Instalar app
       </button>
-    </div>
+    </>
   )
 }
 
