@@ -1,15 +1,26 @@
+import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
 function Modal({ isOpen, onClose, title, children }) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [isOpen])
+
   if (!isOpen) return null
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 grid place-items-center bg-black/40"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-2xl p-5 mx-4 my-8 max-h-[85vh] overflow-y-auto"
+        className="max-w-md rounded-2xl px-6 py-5 mx-5 my-8 max-h-[85vh] overflow-y-auto"
         style={{ background: 'var(--color-surface)' }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -25,7 +36,8 @@ function Modal({ isOpen, onClose, title, children }) {
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
