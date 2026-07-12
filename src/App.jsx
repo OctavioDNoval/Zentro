@@ -1,8 +1,15 @@
+import { Routes, Route } from 'react-router-dom'
+import Home from './pages/Home.jsx'
+import InstallPWA from './components/InstallPWA.jsx'
+
 function App() {
   return (
-    <div className="flex items-center justify-center min-h-svh">
-      <h1 className="text-4xl font-bold">Zentro</h1>
-    </div>
+    <>
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+      <InstallPWA />
+    </>
   )
 }
 
