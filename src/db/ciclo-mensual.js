@@ -16,24 +16,22 @@ export async function ejecutarCicloMensual() {
   const resumenExistente = await db.resumen_mensual.get({ mes: mesActual })
   if (resumenExistente) return
 
-  const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
-  const ultimoDiaMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0)
-
-  const mesAnterior = formatearMes(ultimoDiaMesAnterior)
+  const m = hoy.getMonth(); const y = hoy.getFullYear()
+  const primerDiaStr = `${y}-${String(m + 1).padStart(2, '0')}-01`
+  const mesAnterior = m === 0 ? `${y - 1}-12` : `${y}-${String(m).padStart(2, '0')}`
+  const finMesAnteriorStr = m === 0 ? `${y}-01-01` : `${y}-${String(m).padStart(2, '0')}-01`
+  const inicioMesAnteriorStr = `${mesAnterior}-01`
 
   const gastosDiariosMesAnterior = await db.gastos_diarios
-    .where('fecha')
-    .between(ultimoDiaMesAnterior, primerDiaMes, true, false)
-    .toArray()
+    .where('fecha').between(inicioMesAnteriorStr, finMesAnteriorStr, true, false).toArray()
 
   const totalGastosDiarios = gastosDiariosMesAnterior.reduce((s, g) => s + g.monto, 0)
 
-  const ingresosFijos = await db.ingresos_fijos.where({ activo: true }).toArray()
-  const gastosFijos = await db.gastos_fijos.where({ activo: true }).toArray()
+  const ingresosFijos = await db.ingresos_fijos.where('activo').equals(1).toArray()
+  const gastosFijos = await db.gastos_fijos.where('activo').equals(1).toArray()
+  const finDelMesStr = m === 11 ? `${y + 1}-01-01` : `${y}-${String(m + 2).padStart(2, '0')}-01`
   const ingresosEfimerosMes = await db.ingresos_efimeros
-    .where('fecha')
-    .between(primerDiaMes, new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0))
-    .toArray()
+    .where('fecha').between(primerDiaStr, finDelMesStr, true, false).toArray()
 
   const totalIngresosFijos = ingresosFijos.reduce((s, i) => s + i.monto, 0)
   const totalIngresosEfimeros = ingresosEfimerosMes.reduce((s, i) => s + i.monto, 0)
@@ -45,7 +43,7 @@ export async function ejecutarCicloMensual() {
         totalGastosFijos += g.monto
         await db.gastos_fijos.update(g.id, { cuotas_pagadas: g.cuotas_pagadas + 1 })
         if (g.cuotas_pagadas + 1 >= g.total_cuotas) {
-          await db.gastos_fijos.update(g.id, { activo: false })
+          await db.gastos_fijos.update(g.id, { activo: 0 })
         }
       }
     } else {
@@ -62,12 +60,12 @@ export async function ejecutarCicloMensual() {
     total_gastos_fijos: totalGastosFijos,
     total_gastos_diarios: totalGastosDiarios,
     total_en_mano: saldoFinal,
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
   })
 
   await db.estado_cuenta.update(1, {
     total_en_mano: saldoFinal,
-    updatedAt: new Date(),
+    updatedAt: new Date().toISOString(),
   })
 
   await db.gastos_diarios.clear()

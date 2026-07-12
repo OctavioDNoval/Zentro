@@ -14,7 +14,7 @@ function IngresoFijoModal({ isOpen, onClose, onSaved }) {
     if (!nombre || !monto) return
     setError('')
     try {
-      await db.ingresos_fijos.add({ nombre, monto: Number(monto), dia_cobro: Number(diaCobro), activo: true, createdAt: new Date() })
+      await db.ingresos_fijos.add({ nombre, monto: Number(monto), dia_cobro: Number(diaCobro), activo: 1, createdAt: new Date().toISOString() })
       setNombre(''); setMonto(''); setDiaCobro('1')
       await onSaved?.()
       onClose()

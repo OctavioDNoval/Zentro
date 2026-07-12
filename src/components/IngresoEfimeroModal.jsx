@@ -5,7 +5,7 @@ import Modal from './Modal.jsx'
 
 async function actualizarTotal(delta) {
   const estado = await db.estado_cuenta.get(1)
-  await db.estado_cuenta.update(1, { total_en_mano: (estado?.total_en_mano || 0) + delta, updatedAt: new Date() })
+  await db.estado_cuenta.update(1, { total_en_mano: (estado?.total_en_mano || 0) + delta, updatedAt: new Date().toISOString() })
 }
 
 function IngresoEfimeroModal({ isOpen, onClose, onSaved }) {
@@ -18,7 +18,8 @@ function IngresoEfimeroModal({ isOpen, onClose, onSaved }) {
     if (!nombre || !monto) return
     setError('')
     try {
-      await db.ingresos_efimeros.add({ nombre, monto: Number(monto), fecha: new Date(), createdAt: new Date() })
+      const hoy = new Date(); const fechaStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
+      await db.ingresos_efimeros.add({ nombre, monto: Number(monto), fecha: fechaStr, createdAt: new Date().toISOString() })
       await actualizarTotal(Number(monto))
       setNombre(''); setMonto('')
       await onSaved?.()

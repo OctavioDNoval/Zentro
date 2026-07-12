@@ -5,7 +5,7 @@ import Modal from './Modal.jsx'
 
 async function actualizarTotal(delta) {
   const estado = await db.estado_cuenta.get(1)
-  await db.estado_cuenta.update(1, { total_en_mano: (estado?.total_en_mano || 0) + delta, updatedAt: new Date() })
+  await db.estado_cuenta.update(1, { total_en_mano: (estado?.total_en_mano || 0) + delta, updatedAt: new Date().toISOString() })
 }
 
 function GastoEditModal({ isOpen, onClose, gasto, onSaved }) {

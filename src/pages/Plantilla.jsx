@@ -9,6 +9,7 @@ const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto'
 function formatearMoneda(n) {
   return '$' + (n ?? 0).toLocaleString('es-AR')
 }
+const formatearFecha = (s) => { if (!s) return ''; const [y, m, d] = s.split('T')[0].split('-'); return `${+d}/${+m}/${y}` }
 
 function Plantilla() {
   const [data, setData] = useState({ ingresosFijos: [], ingresosEfimeros: [], gastadoMes: 0, totalEnMano: 0 })
@@ -16,18 +17,23 @@ function Plantilla() {
   const [modalEfimero, setModalEfimero] = useState(false)
 
   const cargar = useCallback(async () => {
-    const hoy = new Date()
-    const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
-    const fin = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
-    const [ingresosFijos, ingresosEfimeros, gastosDiarios, estado] = await Promise.all([
-      db.ingresos_fijos.where({ activo: true }).toArray(),
-      db.ingresos_efimeros.where('fecha').between(inicio, fin).toArray(),
-      db.gastos_diarios.where('fecha').between(inicio, fin).toArray(),
-      db.estado_cuenta.get(1),
-    ])
-    const gastadoMes = gastosDiarios.reduce((s, g) => s + g.monto, 0)
-    const totalSueldos = ingresosFijos.reduce((s, i) => s + i.monto, 0)
-    setData({ ingresosFijos, ingresosEfimeros, gastadoMes, restanteMes: totalSueldos - gastadoMes, totalEnMano: estado?.total_en_mano ?? 0, totalSueldos })
+    try {
+      const hoy = new Date()
+      const m = hoy.getMonth(); const y = hoy.getFullYear()
+      const inicioStr = `${y}-${String(m + 1).padStart(2, '0')}-01`
+      const finStr = m === 11 ? `${y + 1}-01-01` : `${y}-${String(m + 2).padStart(2, '0')}-01`
+      const [ingresosFijos, ingresosEfimeros, gastosDiarios, estado] = await Promise.all([
+        db.ingresos_fijos.where('activo').equals(1).toArray(),
+        db.ingresos_efimeros.where('fecha').between(inicioStr, finStr, true, false).toArray(),
+        db.gastos_diarios.where('fecha').between(inicioStr, finStr, true, false).toArray(),
+        db.estado_cuenta.get(1),
+      ])
+      const gastadoMes = gastosDiarios.reduce((s, g) => s + g.monto, 0)
+      const totalSueldos = ingresosFijos.reduce((s, i) => s + i.monto, 0)
+      setData({ ingresosFijos, ingresosEfimeros, gastadoMes, restanteMes: totalSueldos - gastadoMes, totalEnMano: estado?.total_en_mano ?? 0, totalSueldos })
+    } catch (err) {
+      console.error('Error cargando datos:', err)
+    }
   }, [])
 
   useEffect(() => { cargar() }, [cargar])
@@ -102,7 +108,7 @@ function Plantilla() {
                 style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
                 <div>
                   <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>{ing.nombre}</p>
-                  <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{new Date(ing.fecha).toLocaleDateString('es-AR')}</p>
+                  <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{formatearFecha(ing.fecha)}</p>
                 </div>
                 <p className="text-sm font-semibold" style={{ color: 'var(--color-positive)' }}>{formatearMoneda(ing.monto)}</p>
               </div>

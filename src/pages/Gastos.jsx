@@ -7,6 +7,7 @@ import GastoEditModal from '../components/GastoEditModal.jsx'
 import CategoriaModal from '../components/CategoriaModal.jsx'
 
 function formatearMoneda(n) { return '$' + (n ?? 0).toLocaleString('es-AR') }
+const formatearFecha = (s) => { if (!s) return ''; const [y, m, d] = s.split('T')[0].split('-'); return `${+d}/${+m}/${y}` }
 
 const etiquetaTipo = { suscripcion: 'Suscripción', servicio: 'Servicio', cuotas: 'Cuotas' }
 const colorTipo = { suscripcion: { bg: '#dbeafe', text: '#1d4ed8' }, servicio: { bg: '#fef3c7', text: '#b45309' }, cuotas: { bg: '#ede9fe', text: '#6d28d9' } }
@@ -19,15 +20,20 @@ function Gastos() {
   const [editGasto, setEditGasto] = useState(null)
 
   const cargar = useCallback(async () => {
-    const hoy = new Date()
-    const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
-    const fin = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
-    const [gastosDiarios, gastosFijos, categorias] = await Promise.all([
-      db.gastos_diarios.where('fecha').between(inicio, fin).reverse().toArray(),
-      db.gastos_fijos.where({ activo: true }).toArray(),
-      db.categorias.toArray(),
-    ])
-    setData({ gastosDiarios, gastosFijos, categorias })
+    try {
+      const hoy = new Date()
+      const m = hoy.getMonth(); const y = hoy.getFullYear()
+      const inicioStr = `${y}-${String(m + 1).padStart(2, '0')}-01`
+      const finStr = m === 11 ? `${y + 1}-01-01` : `${y}-${String(m + 2).padStart(2, '0')}-01`
+      const [gastosDiarios, gastosFijos, categorias] = await Promise.all([
+        db.gastos_diarios.where('fecha').between(inicioStr, finStr, true, false).reverse().toArray(),
+        db.gastos_fijos.where('activo').equals(1).toArray(),
+        db.categorias.toArray(),
+      ])
+      setData({ gastosDiarios, gastosFijos, categorias })
+    } catch (err) {
+      console.error('Error cargando gastos:', err)
+    }
   }, [])
 
   useEffect(() => { cargar() }, [cargar])
@@ -64,7 +70,7 @@ function Gastos() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>{g.concepto}</p>
                   <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                    {getCat(g.categoriaId)} · {new Date(g.fecha).toLocaleDateString('es-AR')}
+                    {getCat(g.categoriaId)} · {formatearFecha(g.fecha)}
                   </p>
                 </div>
                 <span className="text-sm font-semibold shrink-0" style={{ color: 'var(--color-negative)' }}>{formatearMoneda(g.monto)}</span>

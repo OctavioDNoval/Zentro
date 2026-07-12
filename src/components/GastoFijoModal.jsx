@@ -15,7 +15,7 @@ function GastoFijoModal({ isOpen, onClose, onSaved }) {
     if (!nombre || !monto) return
     setError('')
     try {
-      const data = { nombre, monto: Number(monto), tipo, activo: true, createdAt: new Date() }
+      const data = { nombre, monto: Number(monto), tipo, activo: 1, createdAt: new Date().toISOString() }
       if (tipo === 'cuotas') { data.total_cuotas = Number(totalCuotas); data.cuotas_pagadas = 0 }
       await db.gastos_fijos.add(data)
       setNombre(''); setMonto(''); setTipo('suscripcion'); setTotalCuotas('')
