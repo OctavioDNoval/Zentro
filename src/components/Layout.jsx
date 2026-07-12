@@ -49,9 +49,9 @@ function Layout() {
         </button>
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 flex justify-center pb-3 pt-1 z-10 pointer-events-none">
+      <nav className="fixed bottom-0 left-0 right-0 flex justify-center pb-4 pt-1 z-10 pointer-events-none">
         <div
-          className="flex items-center gap-1 rounded-2xl px-2 py-1.5 shadow-lg border pointer-events-auto"
+          className="flex items-center gap-1 rounded-2xl px-3 py-2 shadow-lg border pointer-events-auto"
           style={{
             background: 'color-mix(in srgb, var(--color-surface) 90%, transparent)',
             backdropFilter: 'blur(12px)',
@@ -66,13 +66,13 @@ function Layout() {
               <button
                 key={tab.path}
                 onClick={() => navigate(tab.path)}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer"
                 style={{
                   background: isActive ? 'var(--color-accent)' : 'transparent',
                   color: isActive ? '#ffffff' : 'var(--color-text-secondary)',
                 }}
               >
-                <Icon size={16} />
+                <Icon size={18} />
                 <span className={isActive ? 'inline' : 'hidden sm:inline'}>{tab.label}</span>
               </button>
             )

@@ -6,8 +6,8 @@ import GastoFijoModal from '../components/GastoFijoModal.jsx'
 import GastoEditModal from '../components/GastoEditModal.jsx'
 import GastoFijoEditModal from '../components/GastoFijoEditModal.jsx'
 import CategoriaModal from '../components/CategoriaModal.jsx'
+import AnimatedNumber from '../components/AnimatedNumber.jsx'
 
-function formatearMoneda(n) { return '$' + (n ?? 0).toLocaleString('es-AR') }
 const formatearFecha = (s) => { if (!s) return ''; const [y, m, d] = s.split('T')[0].split('-'); return `${+d}/${+m}/${y}` }
 
 const etiquetaTipo = { suscripcion: 'Suscripción', servicio: 'Servicio', cuotas: 'Cuotas' }
@@ -80,7 +80,7 @@ function Gastos() {
                       </div>
                     </div>
                   </div>
-                  <span className="text-sm font-semibold" style={{ color: 'var(--color-negative)' }}>{formatearMoneda(g.monto)}</span>
+                    <span className="text-sm font-semibold" style={{ color: 'var(--color-negative)' }}><AnimatedNumber value={g.monto} /></span>
                 </div>
               )
             })}
@@ -119,7 +119,7 @@ function Gastos() {
                     {getCat(g.categoriaId)} · {formatearFecha(g.fecha)}
                   </p>
                 </div>
-                <span className="text-sm font-semibold shrink-0" style={{ color: 'var(--color-negative)' }}>{formatearMoneda(g.monto)}</span>
+                <span className="text-sm font-semibold shrink-0" style={{ color: 'var(--color-negative)' }}><AnimatedNumber value={g.monto} /></span>
               </button>
             ))}
           </div>

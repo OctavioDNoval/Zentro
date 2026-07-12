@@ -93,7 +93,7 @@ function Plantilla() {
                     <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Día {ing.dia_cobro}</p>
                   </div>
                 </div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--color-positive)' }}>{formatearMoneda(ing.monto)}</p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--color-positive)' }}><AnimatedNumber value={ing.monto} /></p>
               </div>
             ))}
           </div>
@@ -124,7 +124,7 @@ function Plantilla() {
                     <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{formatearFecha(ing.fecha)}</p>
                   </div>
                 </div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--color-positive)' }}>{formatearMoneda(ing.monto)}</p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--color-positive)' }}><AnimatedNumber value={ing.monto} /></p>
               </div>
             ))}
           </div>

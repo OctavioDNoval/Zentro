@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { TrendingUp, TrendingDown, Wallet } from 'lucide-react'
 import db from '../db/index.js'
+import AnimatedNumber from '../components/AnimatedNumber.jsx'
 
 const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
-function formatearMoneda(n) { return '$' + (n ?? 0).toLocaleString('es-AR') }
 const formatearMes = (s) => { const [y, m] = s.split('-'); return `${meses[Number(m) - 1]} ${y}` }
 
 function Dashboard() {
@@ -41,7 +41,7 @@ function Dashboard() {
                         <Icon size={12} style={{ color: item.color }} />
                         <span style={{ color: 'var(--color-text-secondary)' }}>{item.label}</span>
                       </div>
-                      <span className="font-medium" style={{ color: item.color }}>{formatearMoneda(item.value)}</span>
+                      <span className="font-medium" style={{ color: item.color }}><AnimatedNumber value={item.value} /></span>
                     </div>
                   )
                 })}
@@ -53,7 +53,7 @@ function Dashboard() {
                   <span style={{ color: 'var(--color-text-secondary)' }}>Total en mano</span>
                 </div>
                 <span style={{ color: r.total_en_mano >= 0 ? 'var(--color-accent)' : 'var(--color-negative)' }}>
-                  {formatearMoneda(r.total_en_mano)}
+                  <AnimatedNumber value={r.total_en_mano} />
                 </span>
               </div>
             </div>
