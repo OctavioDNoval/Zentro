@@ -1,12 +1,19 @@
 import { Routes, Route } from 'react-router-dom'
-import Home from './pages/Home.jsx'
+import Layout from './components/Layout.jsx'
+import Plantilla from './pages/Plantilla.jsx'
+import Gastos from './pages/Gastos.jsx'
+import Dashboard from './pages/Dashboard.jsx'
 import InstallPWA from './components/InstallPWA.jsx'
 
 function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route element={<Layout />}>
+          <Route index element={<Plantilla />} />
+          <Route path="gastos" element={<Gastos />} />
+          <Route path="dashboard" element={<Dashboard />} />
+        </Route>
       </Routes>
       <InstallPWA />
     </>
