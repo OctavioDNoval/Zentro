@@ -49,7 +49,7 @@ function Gastos() {
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Gastos fijos</h3>
           <button onClick={() => setModalFijo(true)}
-            className="flex items-center gap-1 text-xs font-medium cursor-pointer"
+            className="flex items-center gap-1 text-xs font-medium cursor-pointer transition-all duration-150 active:scale-95"
             style={{ color: 'var(--color-accent)' }}>
             <Plus size={14} /> Agregar
           </button>
@@ -61,7 +61,7 @@ function Gastos() {
             {data.gastosFijos.map((g, i) => {
               const tc = colorTipo[g.tipo]
               return (
-                <div key={g.id} className="rounded-lg px-3 py-2.5 border flex justify-between items-center animate-fade-in-up cursor-pointer hover:opacity-80 transition"
+                <div key={g.id} className="rounded-lg px-3 py-2.5 border flex justify-between items-center animate-fade-in-up cursor-pointer transition-all duration-150 hover:opacity-80 active:scale-[0.98]"
                   style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', animationDelay: `${i * 0.05}s` }}
                   onClick={() => setEditGastoFijo(g)}>
                   <div className="flex items-center gap-2">
@@ -93,12 +93,12 @@ function Gastos() {
           <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Gastos del mes</h3>
           <div className="flex gap-2">
             <button onClick={() => setModalCategoria(true)}
-              className="flex items-center gap-1 text-xs cursor-pointer"
+              className="flex items-center gap-1 text-xs cursor-pointer transition-all duration-150 active:scale-95"
               style={{ color: 'var(--color-text-secondary)' }}>
               <Tag size={12} /> Categoría
             </button>
             <button onClick={() => setModalDiario(true)}
-              className="flex items-center gap-1 text-xs font-medium cursor-pointer"
+              className="flex items-center gap-1 text-xs font-medium cursor-pointer transition-all duration-150 active:scale-95"
               style={{ color: 'var(--color-accent)' }}>
               <Plus size={14} /> Agregar
             </button>
@@ -110,7 +110,7 @@ function Gastos() {
           <div className="space-y-2">
             {data.gastosDiarios.map((g, i) => (
               <button key={g.id} onClick={() => setEditGasto(g)}
-                className="w-full text-left rounded-lg px-3 py-2.5 border flex items-center gap-3 transition cursor-pointer hover:opacity-80 animate-fade-in-up"
+                className="w-full text-left rounded-lg px-3 py-2.5 border flex items-center gap-3 transition-all duration-150 cursor-pointer hover:opacity-80 active:scale-[0.98] animate-fade-in-up"
                 style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', animationDelay: `${i * 0.05}s` }}>
                 <Pencil size={14} className="shrink-0" style={{ color: 'var(--color-text-secondary)' }} />
                 <div className="flex-1 min-w-0">

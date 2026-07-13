@@ -43,7 +43,7 @@ body {
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.4s ease-out forwards;
+  animation: fade-in-up 0.25s ease-out forwards;
 }
 
 .animate-scale-in {

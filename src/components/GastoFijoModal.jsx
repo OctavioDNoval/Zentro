@@ -59,7 +59,7 @@ function GastoFijoModal({ isOpen, onClose, onSaved }) {
           </div>
         )}
         <button type="submit"
-          className="w-full flex items-center justify-center gap-2 text-white rounded-lg py-2 text-sm font-medium transition cursor-pointer"
+          className="w-full flex items-center justify-center gap-2 text-white rounded-lg py-2 text-sm font-medium transition-all duration-150 active:scale-[0.98] cursor-pointer"
           style={{ background: 'var(--color-accent)' }}>
           <Plus size={16} /> Guardar
         </button>

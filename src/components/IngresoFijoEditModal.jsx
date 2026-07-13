@@ -67,12 +67,12 @@ function IngresoFijoEditModal({ isOpen, onClose, ingreso, onSaved }) {
         )}
         <div className="flex gap-2 pt-2">
           <button onClick={handleUpdate}
-            className="flex-1 text-white rounded-lg py-2 text-sm font-medium transition cursor-pointer"
+            className="flex-1 text-white rounded-lg py-2 text-sm font-medium transition-all duration-150 active:scale-[0.98] cursor-pointer"
             style={{ background: 'var(--color-accent)' }}>
             Guardar cambios
           </button>
           <button onClick={handleDelete}
-            className="flex items-center gap-1.5 px-4 rounded-lg py-2 text-sm font-medium transition cursor-pointer"
+            className="flex items-center gap-1.5 px-4 rounded-lg py-2 text-sm font-medium transition-all duration-150 active:scale-[0.98] cursor-pointer"
             style={{ background: 'var(--color-negative)', color: '#fff' }}>
             <Trash2 size={14} /> Eliminar
           </button>

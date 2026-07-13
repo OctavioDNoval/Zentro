@@ -27,7 +27,7 @@ function Layout() {
         <img src="/logo_minimalista_oscuro.png" alt="Zentro" className="h-8 hidden dark:block" />
         <button
           onClick={() => setSettingsOpen(true)}
-          className="cursor-pointer"
+          className="cursor-pointer transition-all duration-150 active:scale-90"
           style={{ color: 'var(--color-text-secondary)' }}
         >
           <Settings size={20} />
@@ -42,7 +42,7 @@ function Layout() {
         <InstallPWA />
         <button
           onClick={() => setGastoModalOpen(true)}
-          className="flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition cursor-pointer"
+          className="flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer"
           style={{ background: '#ea580c' }}
         >
           <Plus size={24} color="#fff" />
@@ -66,7 +66,7 @@ function Layout() {
               <button
                 key={tab.path}
                 onClick={() => navigate(tab.path)}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 active:scale-95 cursor-pointer"
                 style={{
                   background: isActive ? 'var(--color-accent)' : 'transparent',
                   color: isActive ? '#ffffff' : 'var(--color-text-secondary)',

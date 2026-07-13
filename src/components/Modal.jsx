@@ -28,7 +28,7 @@ function Modal({ isOpen, onClose, title, children }) {
           <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>{title}</h2>
           <button
             onClick={onClose}
-            className="cursor-pointer"
+            className="cursor-pointer transition-all duration-150 active:scale-90"
             style={{ color: 'var(--color-text-secondary)' }}
           >
             <X size={20} />

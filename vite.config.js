@@ -21,9 +21,8 @@ export default defineConfig({
         display: 'standalone',
         start_url: '/',
         icons: [
-          { src: '/pwa-192x192.svg', sizes: '192x192', type: 'image/svg+xml' },
-          { src: '/pwa-512x512.svg', sizes: '512x512', type: 'image/svg+xml' },
-          { src: '/zentro_logo.png', sizes: '512x512', type: 'image/png' },
+          { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' },
         ],
       },
       workbox: {

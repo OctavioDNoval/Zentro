@@ -58,7 +58,7 @@ function Plantilla() {
         ].map((card, i) => {
           const Icon = card.icon
           return (
-            <div key={card.label} className="rounded-xl p-3 border animate-fade-in-up animate-scale-in" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', animationDelay: `${i * 0.1}s` }}>
+            <div key={card.label} className="rounded-xl p-3 border animate-fade-in-up animate-scale-in transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', animationDelay: `${i * 0.1}s` }}>
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{card.label}</span>
                 <Icon size={14} style={{ color: card.color }} />
@@ -73,7 +73,7 @@ function Plantilla() {
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Ingresos fijos</h3>
           <button onClick={() => setModalFijo(true)}
-            className="flex items-center gap-1 text-xs font-medium cursor-pointer"
+            className="flex items-center gap-1 text-xs font-medium cursor-pointer transition-all duration-150 active:scale-95"
             style={{ color: 'var(--color-accent)' }}>
             <Plus size={14} /> Agregar
           </button>
@@ -83,7 +83,7 @@ function Plantilla() {
         ) : (
           <div className="space-y-2">
             {data.ingresosFijos.map((ing, i) => (
-              <div key={ing.id} className="rounded-lg px-3 py-2.5 border flex justify-between items-center animate-fade-in-up cursor-pointer hover:opacity-80 transition"
+              <div key={ing.id} className="rounded-lg px-3 py-2.5 border flex justify-between items-center animate-fade-in-up cursor-pointer transition-all duration-150 hover:opacity-80 active:scale-[0.98]"
                 style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', animationDelay: `${i * 0.05}s` }}
                 onClick={() => setEditFijo(ing)}>
                 <div className="flex items-center gap-2">
@@ -104,7 +104,7 @@ function Plantilla() {
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Ingresos</h3>
           <button onClick={() => setModalEfimero(true)}
-            className="flex items-center gap-1 text-xs font-medium cursor-pointer"
+            className="flex items-center gap-1 text-xs font-medium cursor-pointer transition-all duration-150 active:scale-95"
             style={{ color: 'var(--color-accent)' }}>
             <Plus size={14} /> Agregar
           </button>
@@ -114,7 +114,7 @@ function Plantilla() {
         ) : (
           <div className="space-y-2">
             {data.ingresosEfimeros.map((ing, i) => (
-              <div key={ing.id} className="rounded-lg px-3 py-2.5 border flex justify-between items-center animate-fade-in-up cursor-pointer hover:opacity-80 transition"
+              <div key={ing.id} className="rounded-lg px-3 py-2.5 border flex justify-between items-center animate-fade-in-up cursor-pointer transition-all duration-150 hover:opacity-80 active:scale-[0.98]"
                 style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', animationDelay: `${i * 0.05}s` }}
                 onClick={() => setEditEfimero(ing)}>
                 <div className="flex items-center gap-2">
