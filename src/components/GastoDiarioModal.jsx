@@ -40,7 +40,7 @@ function GastoDiarioModal({ isOpen, onClose, onSaved }) {
         <input type="text" placeholder="¿Qué compraste?" value={concepto} onChange={(e) => setConcepto(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2"
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }} autoFocus />
-        <input type="number" step="0.01" placeholder="Monto" value={monto} onChange={(e) => setMonto(e.target.value)}
+        <input type="number" inputMode="decimal" step="0.01" placeholder="Monto" value={monto} onChange={(e) => setMonto(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2"
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
         <select value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)}

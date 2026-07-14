@@ -54,6 +54,15 @@ function Gastos() {
             <Plus size={14} /> Agregar
           </button>
         </div>
+        {data.gastosFijos.length > 0 && (
+          <div className="flex items-center justify-between rounded-lg px-3 py-1.5 mb-3 animate-fade-in-up" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+            <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Total mensual</span>
+            <span className="text-sm font-semibold" style={{ color: 'var(--color-negative)' }}>
+              <AnimatedNumber value={data.gastosFijos.reduce((s, g) => s + g.monto, 0)} />
+              <span className="text-xs font-normal ml-0.5" style={{ color: 'var(--color-text-secondary)' }}>/mes</span>
+            </span>
+          </div>
+        )}
         {data.gastosFijos.length === 0 ? (
           <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Sin gastos fijos</p>
         ) : (

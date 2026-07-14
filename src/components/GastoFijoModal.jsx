@@ -38,7 +38,7 @@ function GastoFijoModal({ isOpen, onClose, onSaved }) {
       <form onSubmit={handleSubmit} className="space-y-3">
         <input type="text" placeholder="Nombre (ej: Netflix)" value={nombre} onChange={(e) => setNombre(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2" style={inputStyle} autoFocus />
-        <input type="number" step="0.01" placeholder="Monto mensual" value={monto} onChange={(e) => setMonto(e.target.value)}
+        <input type="number" inputMode="decimal" step="0.01" placeholder="Monto mensual" value={monto} onChange={(e) => setMonto(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2" style={inputStyle} />
         <select value={tipo} onChange={(e) => setTipo(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2" style={inputStyle}>

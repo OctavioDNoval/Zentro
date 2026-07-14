@@ -51,7 +51,7 @@ function IngresoFijoEditModal({ isOpen, onClose, ingreso, onSaved }) {
         <input type="text" placeholder="Nombre" value={nombre} onChange={(e) => setNombre(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2"
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
-        <input type="number" step="0.01" placeholder="Monto" value={monto} onChange={(e) => setMonto(e.target.value)}
+        <input type="number" inputMode="decimal" step="0.01" placeholder="Monto" value={monto} onChange={(e) => setMonto(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2"
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
         <div>
