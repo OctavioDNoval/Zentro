@@ -1,7 +1,9 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Wallet, CreditCard, BarChart3, Settings, Plus } from 'lucide-react'
+import { Wallet, CreditCard, BarChart3, Settings, Plus, Info } from 'lucide-react'
 import { useState } from 'react'
 import InstallPWA from './InstallPWA.jsx'
+import InstallModal from './InstallModal.jsx'
+import InfoModal from './InfoModal.jsx'
 import SettingsModal from './SettingsModal.jsx'
 import GastoDiarioModal from './GastoDiarioModal.jsx'
 
@@ -15,6 +17,7 @@ function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [infoOpen, setInfoOpen] = useState(false)
   const [gastoModalOpen, setGastoModalOpen] = useState(false)
 
   return (
@@ -25,13 +28,22 @@ function Layout() {
       >
         <img src="/logo_minimalista_claro.png" alt="Zentro" className="h-8 dark:hidden" />
         <img src="/logo_minimalista_oscuro.png" alt="Zentro" className="h-8 hidden dark:block" />
-        <button
-          onClick={() => setSettingsOpen(true)}
-          className="cursor-pointer transition-all duration-150 active:scale-90"
-          style={{ color: 'var(--color-text-secondary)' }}
-        >
-          <Settings size={20} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setInfoOpen(true)}
+            className="cursor-pointer transition-all duration-150 active:scale-90"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
+            <Info size={20} />
+          </button>
+          <button
+            onClick={() => setSettingsOpen(true)}
+            className="cursor-pointer transition-all duration-150 active:scale-90"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
+            <Settings size={20} />
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 py-4 pb-24">
@@ -80,6 +92,8 @@ function Layout() {
         </div>
       </nav>
 
+      <InstallModal />
+      <InfoModal isOpen={infoOpen} onClose={() => setInfoOpen(false)} />
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <GastoDiarioModal isOpen={gastoModalOpen} onClose={() => setGastoModalOpen(false)} onSaved={() => setGastoModalOpen(false)} />
     </div>
