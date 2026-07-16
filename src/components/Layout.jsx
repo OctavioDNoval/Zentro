@@ -95,7 +95,7 @@ function Layout() {
       <InstallModal />
       <InfoModal isOpen={infoOpen} onClose={() => setInfoOpen(false)} />
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
-      <GastoDiarioModal isOpen={gastoModalOpen} onClose={() => setGastoModalOpen(false)} onSaved={() => setGastoModalOpen(false)} />
+      <GastoDiarioModal isOpen={gastoModalOpen} onClose={() => setGastoModalOpen(false)} onSaved={() => window.dispatchEvent(new CustomEvent('zentro:data-changed'))} />
     </div>
   )
 }

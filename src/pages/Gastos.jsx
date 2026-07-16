@@ -40,6 +40,12 @@ function Gastos() {
 
   useEffect(() => { cargar() }, [cargar])
 
+  useEffect(() => {
+    const handler = () => cargar()
+    window.addEventListener('zentro:data-changed', handler)
+    return () => window.removeEventListener('zentro:data-changed', handler)
+  }, [cargar])
+
   const getCat = (id) => data.categorias.find((c) => c.id === id)?.nombre ?? 'Sin categoría'
 
   return (

@@ -43,6 +43,12 @@ function Plantilla() {
 
   useEffect(() => { cargar() }, [cargar])
 
+  useEffect(() => {
+    const handler = () => cargar()
+    window.addEventListener('zentro:data-changed', handler)
+    return () => window.removeEventListener('zentro:data-changed', handler)
+  }, [cargar])
+
   const mesActual = `${meses[new Date().getMonth()]} ${new Date().getFullYear()}`
 
   return (
