@@ -4,6 +4,7 @@ import Layout from './components/Layout.jsx'
 import Plantilla from './pages/Plantilla.jsx'
 import Gastos from './pages/Gastos.jsx'
 import Dashboard from './pages/Dashboard.jsx'
+import Ahorros from './pages/Ahorros.jsx'
 import SplashScreen from './components/SplashScreen.jsx'
 
 function App({ dbReady }) {
@@ -25,6 +26,7 @@ function App({ dbReady }) {
           <Route index element={<Plantilla />} />
           <Route path="gastos" element={<Gastos />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="ahorros" element={<Ahorros />} />
         </Route>
       </Routes>
     </>

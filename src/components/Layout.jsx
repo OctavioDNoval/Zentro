@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Wallet, CreditCard, BarChart3, Settings, Plus, Info } from 'lucide-react'
+import { Wallet, CreditCard, BarChart3, Coins, Settings, Plus, Info } from 'lucide-react'
 import { useState } from 'react'
 import InstallPWA from './InstallPWA.jsx'
 import InstallModal from './InstallModal.jsx'
@@ -10,6 +10,7 @@ import GastoDiarioModal from './GastoDiarioModal.jsx'
 const tabs = [
   { path: '/', label: 'Plantilla', icon: Wallet },
   { path: '/gastos', label: 'Gastos', icon: CreditCard },
+  { path: '/ahorros', label: 'Ahorros', icon: Coins },
   { path: '/dashboard', label: 'Dashboard', icon: BarChart3 },
 ]
 
@@ -50,20 +51,13 @@ function Layout() {
         <Outlet />
       </main>
 
-      <div className="fixed bottom-20 right-4 z-20 flex flex-col items-end gap-3">
+      <div className="fixed bottom-28 right-4 z-20">
         <InstallPWA />
-        <button
-          onClick={() => setGastoModalOpen(true)}
-          className="flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer"
-          style={{ background: '#ea580c' }}
-        >
-          <Plus size={24} color="#fff" />
-        </button>
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 flex justify-center pb-4 pt-1 z-10 pointer-events-none">
+      <nav className="fixed bottom-0 left-0 right-0 flex justify-center pb-3 pt-1 z-10 pointer-events-none">
         <div
-          className="flex items-center gap-1 rounded-2xl px-3 py-2 shadow-lg border pointer-events-auto"
+          className="flex items-center justify-center gap-5 rounded-2xl px-5 py-2 shadow-lg border pointer-events-auto"
           style={{
             background: 'color-mix(in srgb, var(--color-surface) 90%, transparent)',
             backdropFilter: 'blur(12px)',
@@ -71,21 +65,38 @@ function Layout() {
             borderColor: 'var(--color-border)',
           }}
         >
-          {tabs.map((tab) => {
+          {tabs.slice(0, 2).map((tab) => {
             const isActive = location.pathname === tab.path
             const Icon = tab.icon
             return (
-              <button
-                key={tab.path}
-                onClick={() => navigate(tab.path)}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 active:scale-95 cursor-pointer"
+              <button key={tab.path} onClick={() => navigate(tab.path)} aria-label={tab.label}
+                className="flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-150 active:scale-95 cursor-pointer"
                 style={{
                   background: isActive ? 'var(--color-accent)' : 'transparent',
                   color: isActive ? '#ffffff' : 'var(--color-text-secondary)',
-                }}
-              >
-                <Icon size={18} />
-                <span className={isActive ? 'inline' : 'hidden sm:inline'}>{tab.label}</span>
+                }}>
+                <Icon size={22} />
+              </button>
+            )
+          })}
+
+          <button onClick={() => setGastoModalOpen(true)}
+            className="flex items-center justify-center w-12 h-12 rounded-2xl shadow-lg transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer"
+            style={{ background: '#ea580c' }}>
+            <Plus size={26} color="#fff" />
+          </button>
+
+          {tabs.slice(2).map((tab) => {
+            const isActive = location.pathname === tab.path
+            const Icon = tab.icon
+            return (
+              <button key={tab.path} onClick={() => navigate(tab.path)} aria-label={tab.label}
+                className="flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-150 active:scale-95 cursor-pointer"
+                style={{
+                  background: isActive ? 'var(--color-accent)' : 'transparent',
+                  color: isActive ? '#ffffff' : 'var(--color-text-secondary)',
+                }}>
+                <Icon size={22} />
               </button>
             )
           })}

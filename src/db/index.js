@@ -12,4 +12,9 @@ db.version(2).stores({
   estado_cuenta: 'id',
 })
 
+db.version(3).stores({
+  ahorros: '++id, moneda',
+  cotizaciones: 'casa',
+})
+
 export default db
