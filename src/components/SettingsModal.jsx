@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react'
-import { Sun, Moon, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Sun, Moon, X, Download, Upload, Loader2 } from 'lucide-react'
+import { exportarDatos, importarDatos } from '../db/exportImport.js'
 
 function SettingsModal({ isOpen, onClose }) {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
+  const [importing, setImporting] = useState(false)
+  const fileRef = useRef(null)
 
   useEffect(() => {
     if (dark) {
@@ -52,6 +55,47 @@ function SettingsModal({ isOpen, onClose }) {
               }`}
             />
           </button>
+        </div>
+
+        <div className="mt-5">
+          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>Datos</h3>
+          <div className="flex flex-col gap-2">
+            <button onClick={exportarDatos}
+              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-150 active:scale-[0.97] cursor-pointer"
+              style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}>
+              <Download size={18} style={{ color: 'var(--color-accent)' }} />
+              Exportar datos
+            </button>
+
+            <input ref={fileRef} type="file" accept=".json" hidden
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                if (!window.confirm('¿Estás seguro? Se reemplazarán todos los datos actuales con los del archivo.')) {
+                  e.target.value = ''
+                  return
+                }
+                setImporting(true)
+                try {
+                  await importarDatos(file)
+                  alert('Datos importados correctamente')
+                  window.dispatchEvent(new CustomEvent('zentro:data-changed'))
+                } catch (err) {
+                  alert('Error al importar: ' + err.message)
+                } finally {
+                  setImporting(false)
+                  e.target.value = ''
+                }
+              }} />
+
+            <button onClick={() => fileRef.current?.click()} disabled={importing}
+              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-150 active:scale-[0.97] cursor-pointer disabled:opacity-50"
+              style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}>
+              {importing ? <Loader2 size={18} className="animate-spin" style={{ color: 'var(--color-accent)' }} />
+                : <Upload size={18} style={{ color: 'var(--color-accent)' }} />}
+              {importing ? 'Importando...' : 'Importar datos'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
