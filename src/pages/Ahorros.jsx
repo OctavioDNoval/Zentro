@@ -4,6 +4,7 @@ import db from '../db/index.js'
 import AnimatedNumber from '../components/AnimatedNumber.jsx'
 import AhorroModal from '../components/AhorroModal.jsx'
 import AhorroEditModal from '../components/AhorroEditModal.jsx'
+import { SkeletonCard } from '../components/Skeleton.jsx'
 
 const DOLAR_API = 'https://dolarapi.com/v1/dolares'
 const CASAS = ['blue', 'oficial', 'mep', 'ccl']
@@ -60,6 +61,7 @@ function Ahorros() {
   const [cotizaciones, setCotizaciones] = useState([])
   const [lastUpdated, setLastUpdated] = useState(null)
   const [fetching, setFetching] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [editAhorro, setEditAhorro] = useState(null)
   const intervalRef = useRef(null)
@@ -87,8 +89,7 @@ function Ahorros() {
   }, [])
 
   useEffect(() => {
-    cargarAhorros()
-    cargarCotizaciones()
+    Promise.all([cargarAhorros(), cargarCotizaciones()]).then(() => setLoading(false))
     intervalRef.current = setInterval(cargarCotizaciones, 300000)
     return () => clearInterval(intervalRef.current)
   }, [cargarAhorros, cargarCotizaciones])
@@ -102,6 +103,26 @@ function Ahorros() {
 
   const totalEnARS = blue ? totalARS + totalUSD * blue.venta : totalARS
   const totalEnUSD = blue ? totalUSD + totalARS / blue.venta : totalUSD
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-fade-in-up">
+        <div className="text-center pt-2">
+          <div className="h-7 w-20 mx-auto rounded-lg" style={{ background: 'linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-border) 50%, var(--color-bg-secondary) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+        </div>
+        <div className="rounded-2xl border p-4 space-y-3" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+          <div className="h-3 w-32 rounded-lg" style={{ background: 'linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-border) 50%, var(--color-bg-secondary) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+          <div className="grid grid-cols-4 gap-2">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="h-14 rounded-xl" style={{ background: 'linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-border) 50%, var(--color-bg-secondary) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+            ))}
+          </div>
+        </div>
+        <SkeletonCard lines={[50, 30]} />
+        <SkeletonCard lines={[60, 35]} />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 animate-fade-in-up">

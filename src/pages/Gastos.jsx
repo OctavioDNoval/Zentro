@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Tag, Pencil } from 'lucide-react'
+import { Plus, Tag, Pencil, Search, X } from 'lucide-react'
 import db from '../db/index.js'
 import GastoDiarioModal from '../components/GastoDiarioModal.jsx'
 import GastoFijoModal from '../components/GastoFijoModal.jsx'
@@ -7,6 +7,8 @@ import GastoEditModal from '../components/GastoEditModal.jsx'
 import GastoFijoEditModal from '../components/GastoFijoEditModal.jsx'
 import CategoriaModal from '../components/CategoriaModal.jsx'
 import AnimatedNumber from '../components/AnimatedNumber.jsx'
+import { SkeletonCard } from '../components/Skeleton.jsx'
+import SwipeToDelete from '../components/SwipeToDelete.jsx'
 
 const formatearFecha = (s) => { if (!s) return ''; const [y, m, d] = s.split('T')[0].split('-'); return `${+d}/${+m}/${y}` }
 
@@ -19,6 +21,8 @@ const colorTipo = {
 
 function Gastos() {
   const [data, setData] = useState({ gastosDiarios: [], gastosFijos: [], categorias: [] })
+  const [loading, setLoading] = useState(true)
+  const [busqueda, setBusqueda] = useState('')
   const [modalDiario, setModalDiario] = useState(false)
   const [modalFijo, setModalFijo] = useState(false)
   const [modalCategoria, setModalCategoria] = useState(false)
@@ -39,6 +43,8 @@ function Gastos() {
       setData({ gastosDiarios, gastosFijos, categorias })
     } catch (err) {
       console.error('Error cargando gastos:', err)
+    } finally {
+      setLoading(false)
     }
   }, [])
 
@@ -51,6 +57,34 @@ function Gastos() {
   }, [cargar])
 
   const getCat = (id) => data.categorias.find((c) => c.id === id)?.nombre ?? 'Sin categoría'
+
+  const eliminarGasto = async (id) => {
+    await db.gastos_diarios.delete(id)
+    window.dispatchEvent(new CustomEvent('zentro:data-changed'))
+    cargar()
+  }
+
+  const gastosFiltrados = data.gastosDiarios.filter((g) => {
+    if (!busqueda.trim()) return true
+    const q = busqueda.toLowerCase()
+    const cat = getCat(g.categoriaId).toLowerCase()
+    return g.concepto.toLowerCase().includes(q) || cat.includes(q)
+  })
+
+  const totalFiltrado = gastosFiltrados.reduce((s, g) => s + g.monto, 0)
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-fade-in-up">
+        <div className="text-center pt-2">
+          <div className="h-7 w-20 mx-auto rounded-lg" style={{ background: 'linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-border) 50%, var(--color-bg-secondary) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+        </div>
+        <SkeletonCard lines={[70, 40]} />
+        <SkeletonCard lines={[60, 35]} />
+        <SkeletonCard lines={[55, 30]} />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -132,27 +166,66 @@ function Gastos() {
             </button>
           </div>
         </div>
+
+        {data.gastosDiarios.length > 0 && (
+          <div className="relative mb-3">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-tertiary)' }} />
+            <input
+              type="text"
+              placeholder="Buscar por concepto o categoría..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="w-full pl-9 pr-9 py-2.5 text-sm font-medium rounded-xl border outline-none transition-all duration-200"
+              style={{ background: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+            />
+            {busqueda && (
+              <button onClick={() => setBusqueda('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+                style={{ color: 'var(--color-text-tertiary)' }}>
+                <X size={14} />
+              </button>
+            )}
+          </div>
+        )}
+
+        {busqueda && gastosFiltrados.length > 0 && (
+          <div className="flex items-center justify-between mb-2 px-1">
+            <span className="text-[11px] font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+              {gastosFiltrados.length} resultado{gastosFiltrados.length !== 1 ? 's' : ''}
+            </span>
+            <span className="text-[11px] font-bold" style={{ color: 'var(--color-negative)' }}>
+              Total: <AnimatedNumber value={totalFiltrado} />
+            </span>
+          </div>
+        )}
+
         {data.gastosDiarios.length === 0 ? (
           <div className="rounded-2xl border p-5 text-center" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
             <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Sin gastos este mes</p>
           </div>
+        ) : gastosFiltrados.length === 0 ? (
+          <div className="rounded-2xl border p-5 text-center" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+            <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Sin resultados para "{busqueda}"</p>
+          </div>
         ) : (
           <div className="space-y-2">
-            {data.gastosDiarios.map((g, i) => (
-              <button key={g.id} onClick={() => setEditGasto(g)}
-                className="w-full text-left card-base rounded-2xl px-4 py-3 flex items-center gap-3 transition-all duration-200 cursor-pointer active:scale-[0.98] animate-fade-in-up"
-                style={{ animationDelay: `${i * 0.05}s` }}>
-                <div className="flex items-center justify-center w-8 h-8 rounded-xl shrink-0" style={{ background: 'var(--color-negative-light)' }}>
-                  <Pencil size={14} style={{ color: 'var(--color-negative)' }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>{g.concepto}</p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {getCat(g.categoriaId)} · {formatearFecha(g.fecha)}
-                  </p>
-                </div>
-                <span className="text-sm font-bold shrink-0" style={{ color: 'var(--color-negative)' }}><AnimatedNumber value={g.monto} /></span>
-              </button>
+            {gastosFiltrados.map((g, i) => (
+              <SwipeToDelete key={g.id} onDelete={() => eliminarGasto(g.id)}>
+                <button onClick={() => setEditGasto(g)}
+                  className="w-full text-left card-base rounded-2xl px-4 py-3 flex items-center gap-3 transition-all duration-200 cursor-pointer active:scale-[0.98] animate-fade-in-up"
+                  style={{ animationDelay: `${i * 0.05}s` }}>
+                  <div className="flex items-center justify-center w-8 h-8 rounded-xl shrink-0" style={{ background: 'var(--color-negative-light)' }}>
+                    <Pencil size={14} style={{ color: 'var(--color-negative)' }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>{g.concepto}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                      {getCat(g.categoriaId)} · {formatearFecha(g.fecha)}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold shrink-0" style={{ color: 'var(--color-negative)' }}><AnimatedNumber value={g.monto} /></span>
+                </button>
+              </SwipeToDelete>
             ))}
           </div>
         )}

@@ -1,18 +1,20 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, ArrowDownRight, Wallet, Pencil } from 'lucide-react'
+import { Plus, ArrowDownRight, Wallet, Pencil, AlertTriangle } from 'lucide-react'
 import db from '../db/index.js'
 import IngresoFijoModal from '../components/IngresoFijoModal.jsx'
 import IngresoEfimeroModal from '../components/IngresoEfimeroModal.jsx'
 import IngresoFijoEditModal from '../components/IngresoFijoEditModal.jsx'
 import IngresoEfimeroEditModal from '../components/IngresoEfimeroEditModal.jsx'
 import AnimatedNumber from '../components/AnimatedNumber.jsx'
+import { SkeletonCard } from '../components/Skeleton.jsx'
 
 const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
 const formatearFecha = (s) => { if (!s) return ''; const [y, m, d] = s.split('T')[0].split('-'); return `${+d}/${+m}/${y}` }
 
 function Plantilla() {
-  const [data, setData] = useState({ ingresosFijos: [], ingresosEfimeros: [], gastadoMes: 0, totalEnMano: 0 })
+  const [data, setData] = useState({ ingresosFijos: [], ingresosEfimeros: [], gastadoMes: 0, totalEnMano: 0, gastosFijos: [] })
+  const [loading, setLoading] = useState(true)
   const [modalFijo, setModalFijo] = useState(false)
   const [modalEfimero, setModalEfimero] = useState(false)
   const [editFijo, setEditFijo] = useState(null)
@@ -24,17 +26,20 @@ function Plantilla() {
       const m = hoy.getMonth(); const y = hoy.getFullYear()
       const inicioStr = `${y}-${String(m + 1).padStart(2, '0')}-01`
       const finStr = m === 11 ? `${y + 1}-01-01` : `${y}-${String(m + 2).padStart(2, '0')}-01`
-      const [ingresosFijos, ingresosEfimeros, gastosDiarios, estado] = await Promise.all([
+      const [ingresosFijos, ingresosEfimeros, gastosDiarios, gastosFijos, estado] = await Promise.all([
         db.ingresos_fijos.where('activo').equals(1).toArray(),
         db.ingresos_efimeros.where('fecha').between(inicioStr, finStr, true, false).toArray(),
         db.gastos_diarios.where('fecha').between(inicioStr, finStr, true, false).toArray(),
+        db.gastos_fijos.where('activo').equals(1).toArray(),
         db.estado_cuenta.get(1),
       ])
       const gastadoMes = gastosDiarios.reduce((s, g) => s + g.monto, 0)
       const totalSueldos = ingresosFijos.reduce((s, i) => s + i.monto, 0)
-      setData({ ingresosFijos, ingresosEfimeros, gastadoMes, restanteMes: totalSueldos - gastadoMes, totalEnMano: estado?.total_en_mano ?? 0, totalSueldos })
+      setData({ ingresosFijos, ingresosEfimeros, gastadoMes, restanteMes: totalSueldos - gastadoMes, totalEnMano: estado?.total_en_mano ?? 0, totalSueldos, gastosFijos })
     } catch (err) {
       console.error('Error cargando datos:', err)
+    } finally {
+      setLoading(false)
     }
   }, [])
 
@@ -47,6 +52,28 @@ function Plantilla() {
   }, [cargar])
 
   const mesActual = `${meses[new Date().getMonth()]} ${new Date().getFullYear()}`
+  const totalGastosFijos = data.gastosFijos.reduce((s, g) => s + g.monto, 0)
+  const totalIngresos = data.totalSueldos + data.ingresosEfimeros.reduce((s, i) => s + i.monto, 0)
+  const porcentajeGastado = totalIngresos > 0 ? Math.min((data.gastadoMes / totalIngresos) * 100, 100) : 0
+  const porcentajeFijos = totalIngresos > 0 ? Math.min((totalGastosFijos / totalIngresos) * 100, 100) : 0
+  const alertaPresupuesto = totalIngresos > 0 && data.gastadoMes > totalIngresos * 0.8
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-fade-in-up">
+        <div className="text-center pt-2 space-y-2">
+          <div className="h-7 w-28 mx-auto rounded-lg" style={{ background: 'linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-border) 50%, var(--color-bg-secondary) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+          <div className="h-4 w-36 mx-auto rounded-lg" style={{ background: 'linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-border) 50%, var(--color-bg-secondary) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s ease-in-out infinite' }} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <SkeletonCard lines={[50, 30]} />
+          <SkeletonCard lines={[40, 35]} />
+        </div>
+        <SkeletonCard lines={[70, 40]} />
+        <SkeletonCard lines={[60, 35]} />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -75,6 +102,38 @@ function Plantilla() {
           )
         })}
       </div>
+
+      {totalIngresos > 0 && (
+        <div className="rounded-2xl p-4 border animate-fade-in-up" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', animationDelay: '0.16s' }}>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Gastos fijos del mes</span>
+            <span className="text-xs font-bold" style={{ color: 'var(--color-negative)' }}>{Math.round(porcentajeFijos)}%</span>
+          </div>
+          <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-bg-secondary)' }}>
+            <div className="h-full rounded-full transition-all duration-700 ease-out"
+              style={{
+                width: `${porcentajeFijos}%`,
+                background: porcentajeFijos > 80 ? 'var(--color-negative)' : porcentajeFijos > 50 ? '#f59e0b' : 'var(--color-accent)',
+              }}
+            />
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}><AnimatedNumber value={totalGastosFijos} /> / <AnimatedNumber value={totalIngresos} /></span>
+            <span className="text-[10px] font-medium" style={{ color: 'var(--color-text-tertiary)' }}>fijos vs ingresos</span>
+          </div>
+        </div>
+      )}
+
+      {alertaPresupuesto && (
+        <div className="flex items-center gap-3 rounded-2xl px-4 py-3 animate-fade-in-up"
+          style={{ background: 'var(--color-negative-light)', border: '1px solid color-mix(in srgb, var(--color-negative) 25%, transparent)', animationDelay: '0.2s' }}>
+          <AlertTriangle size={16} style={{ color: 'var(--color-negative)', flexShrink: 0 }} />
+          <div>
+            <p className="text-xs font-bold" style={{ color: 'var(--color-negative)' }}>¡Atención!</p>
+            <p className="text-[11px] font-medium" style={{ color: 'var(--color-text-secondary)' }}>Ya gastaste el {Math.round(porcentajeGastado)}% de tus ingresos este mes</p>
+          </div>
+        </div>
+      )}
 
       <section>
         <div className="flex items-center justify-between mb-3">
