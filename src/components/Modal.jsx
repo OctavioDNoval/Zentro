@@ -16,22 +16,27 @@ function Modal({ isOpen, onClose, title, children }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 grid place-items-center bg-black/40"
+      className="fixed inset-0 z-50 grid place-items-center"
+      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
       onClick={onClose}
     >
       <div
-        className="max-w-md rounded-2xl px-6 py-5 mx-5 my-8 max-h-[85vh] overflow-y-auto"
-        style={{ background: 'var(--color-surface)' }}
+        className="w-full max-w-md rounded-3xl px-6 py-6 mx-4 my-8 max-h-[85vh] overflow-y-auto animate-scale-in"
+        style={{
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
+          boxShadow: '0 24px 48px -12px rgba(0,0,0,0.25), 0 0 0 1px var(--color-border-subtle)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>{title}</h2>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>{title}</h2>
           <button
             onClick={onClose}
-            className="cursor-pointer transition-all duration-150 active:scale-90"
-            style={{ color: 'var(--color-text-secondary)' }}
+            className="flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-90 cursor-pointer"
+            style={{ color: 'var(--color-text-tertiary)', background: 'var(--color-bg-secondary)' }}
           >
-            <X size={20} />
+            <X size={16} />
           </button>
         </div>
         {children}

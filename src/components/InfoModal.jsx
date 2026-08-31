@@ -49,25 +49,31 @@ function InfoModal({ isOpen, onClose }) {
   if (!isOpen) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={handleClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+      onClick={handleClose}>
       <div
-        className="relative max-w-sm w-full mx-5 rounded-2xl px-6 py-7"
-        style={{ background: 'var(--color-surface)' }}
+        className="relative max-w-sm w-full mx-5 rounded-3xl px-6 py-7 animate-scale-in"
+        style={{
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
+          boxShadow: '0 24px 48px -12px rgba(0,0,0,0.25)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={handleClose}
-          className="absolute top-3 right-3 cursor-pointer transition-all duration-150 active:scale-90"
-          style={{ color: 'var(--color-text-secondary)' }}
+          className="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-90 cursor-pointer"
+          style={{ color: 'var(--color-text-tertiary)', background: 'var(--color-bg-secondary)' }}
         >
-          <X size={20} />
+          <X size={16} />
         </button>
 
         <div key={step} className="flex flex-col items-center text-center min-h-[200px] justify-center animate-fade-in-up">
-          <div className="mb-5 p-4 rounded-full" style={{ background: 'var(--color-accent-light)' }}>
+          <div className="mb-5 p-4 rounded-2xl" style={{ background: 'var(--color-accent-glow)' }}>
             <Icon size={36} style={{ color: 'var(--color-accent)' }} />
           </div>
-          <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text)' }}>
+          <h2 className="text-lg font-bold tracking-tight mb-2" style={{ color: 'var(--color-text)' }}>
             {current.title}
           </h2>
           <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
@@ -92,8 +98,8 @@ function InfoModal({ isOpen, onClose }) {
           {step > 0 ? (
             <button
               onClick={() => setStep(step - 1)}
-              className="flex items-center gap-1 text-sm font-medium cursor-pointer transition-all duration-150 active:scale-95"
-              style={{ color: 'var(--color-text-secondary)' }}
+              className="flex items-center gap-1 text-sm font-semibold cursor-pointer transition-all duration-200 active:scale-95 px-3 py-1.5 rounded-xl"
+              style={{ color: 'var(--color-text-secondary)', background: 'var(--color-bg-secondary)' }}
             >
               <ChevronLeft size={16} /> Anterior
             </button>
@@ -104,16 +110,16 @@ function InfoModal({ isOpen, onClose }) {
           {step < total - 1 ? (
             <button
               onClick={() => setStep(step + 1)}
-              className="flex items-center gap-1 text-sm font-medium cursor-pointer transition-all duration-150 active:scale-95"
-              style={{ color: 'var(--color-accent)' }}
+              className="flex items-center gap-1 text-sm font-semibold cursor-pointer transition-all duration-200 active:scale-95 px-3 py-1.5 rounded-xl"
+              style={{ color: 'var(--color-accent)', background: 'var(--color-accent-glow)' }}
             >
               Siguiente <ChevronRight size={16} />
             </button>
           ) : (
             <button
               onClick={handleClose}
-              className="text-sm font-medium cursor-pointer transition-all duration-150 active:scale-95"
-              style={{ color: 'var(--color-accent)' }}
+              className="text-sm font-semibold cursor-pointer transition-all duration-200 active:scale-95 px-3 py-1.5 rounded-xl"
+              style={{ color: '#fff', background: 'linear-gradient(135deg, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 80%, #ea580c) 100%)' }}
             >
               ¡Empezar!
             </button>

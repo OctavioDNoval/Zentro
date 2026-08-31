@@ -31,34 +31,36 @@ function IngresoFijoModal({ isOpen, onClose, onSaved }) {
     }
   }
 
+  const inputClass = 'w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent'
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Nuevo ingreso fijo">
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <input type="text" placeholder="Nombre (ej: Sueldo)" value={nombre} onChange={(e) => setNombre(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2"
-          style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)', '--tw-ring-color': 'var(--color-accent)' }} autoFocus />
+          className={inputClass}
+          style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }} autoFocus />
         <input type="number" inputMode="decimal" step="0.01" placeholder="Monto" value={monto} onChange={(e) => setMonto(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2"
-          style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
+          className={inputClass}
+          style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }} />
         <div>
-          <label className="text-xs mb-1 block" style={{ color: 'var(--color-text-secondary)' }}>Día de cobro</label>
+          <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--color-text-secondary)' }}>Día de cobro</label>
           <input type="number" min="1" max="31" value={diaCobro} onChange={(e) => setDiaCobro(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2"
-            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)', color: 'var(--color-text)' }} />
+            className={inputClass}
+            style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }} />
         </div>
-        <label className="flex items-center gap-2 text-xs cursor-pointer" style={{ color: 'var(--color-text-secondary)' }}>
+        <label className="flex items-center gap-2.5 text-xs cursor-pointer py-1" style={{ color: 'var(--color-text-secondary)' }}>
           <input type="checkbox" checked={sumarAhora} onChange={(e) => setSumarAhora(e.target.checked)}
-            className="accent-indigo-600 w-4 h-4 rounded cursor-pointer" />
+            className="w-4 h-4 rounded cursor-pointer accent-[var(--color-accent)]" />
           Sumar al disponible ahora — si no, se suma el 1 del próximo mes
         </label>
         {error && (
-          <div className="flex items-center gap-2 text-xs rounded-lg px-3 py-2" style={{ background: 'var(--color-negative)', color: '#fff' }}>
+          <div className="flex items-center gap-2 text-xs rounded-xl px-4 py-2.5" style={{ background: 'var(--color-negative-light)', color: 'var(--color-negative)' }}>
             <AlertCircle size={14} /> {error}
           </div>
         )}
         <button type="submit"
-          className="w-full flex items-center justify-center gap-2 text-white rounded-lg py-2 text-sm font-medium transition-all duration-150 active:scale-[0.98] cursor-pointer"
-          style={{ background: 'var(--color-accent)' }}>
+          className="w-full flex items-center justify-center gap-2 btn-primary rounded-xl py-2.5 text-sm cursor-pointer"
+          style={{ background: 'linear-gradient(135deg, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 80%, #ea580c) 100%)' }}>
           <Plus size={16} /> Guardar
         </button>
       </form>

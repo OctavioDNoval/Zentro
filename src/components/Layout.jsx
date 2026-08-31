@@ -24,30 +24,35 @@ function Layout() {
   return (
     <div className="flex flex-col min-h-svh" style={{ background: 'var(--color-bg)' }}>
       <header
-        className="flex items-center justify-between px-4 py-3 sticky top-0 z-10 border-b"
-        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        className="flex items-center justify-between px-4 py-3 sticky top-0 z-10"
+        style={{
+          background: 'color-mix(in srgb, var(--color-bg) 80%, transparent)',
+          backdropFilter: 'blur(20px) saturate(1.2)',
+          WebkitBackdropFilter: 'blur(20px) saturate(1.2)',
+          borderBottom: '1px solid var(--color-border-subtle)',
+        }}
       >
-        <img src="/logo_minimalista_claro.png" alt="Zentro" className="h-8 dark:hidden" />
-        <img src="/logo_minimalista_oscuro.png" alt="Zentro" className="h-8 hidden dark:block" />
-        <div className="flex items-center gap-2">
+        <img src="/logo_minimalista_claro.png" alt="Zentro" className="h-7 dark:hidden" />
+        <img src="/logo_minimalista_oscuro.png" alt="Zentro" className="h-7 hidden dark:block" />
+        <div className="flex items-center gap-1">
           <button
             onClick={() => setInfoOpen(true)}
-            className="cursor-pointer transition-all duration-150 active:scale-90"
+            className="flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 active:scale-90 hover:bg-[var(--color-accent-glow)]"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            <Info size={20} />
+            <Info size={18} />
           </button>
           <button
             onClick={() => setSettingsOpen(true)}
-            className="cursor-pointer transition-all duration-150 active:scale-90"
+            className="flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 active:scale-90 hover:bg-[var(--color-accent-glow)]"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            <Settings size={20} />
+            <Settings size={18} />
           </button>
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-4 py-4 pb-24">
+      <main className="flex-1 overflow-y-auto px-4 py-5 pb-28">
         <Outlet />
       </main>
 
@@ -55,14 +60,15 @@ function Layout() {
         <InstallPWA />
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 flex justify-center pb-3 pt-1 z-10 pointer-events-none">
+      <nav className="fixed bottom-0 left-0 right-0 flex justify-center pb-4 pt-2 z-10 pointer-events-none">
         <div
-          className="flex items-center justify-center gap-5 rounded-2xl px-5 py-2 shadow-lg border pointer-events-auto"
+          className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2 pointer-events-auto"
           style={{
-            background: 'color-mix(in srgb, var(--color-surface) 90%, transparent)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            borderColor: 'var(--color-border)',
+            background: 'color-mix(in srgb, var(--color-surface) 85%, transparent)',
+            backdropFilter: 'blur(24px) saturate(1.3)',
+            WebkitBackdropFilter: 'blur(24px) saturate(1.3)',
+            border: '1px solid color-mix(in srgb, var(--color-border) 50%, transparent)',
+            boxShadow: '0 8px 32px -4px rgba(0,0,0,0.15), 0 0 0 1px color-mix(in srgb, var(--color-border) 30%, transparent)',
           }}
         >
           {tabs.slice(0, 2).map((tab) => {
@@ -70,20 +76,24 @@ function Layout() {
             const Icon = tab.icon
             return (
               <button key={tab.path} onClick={() => navigate(tab.path)} aria-label={tab.label}
-                className="flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-150 active:scale-95 cursor-pointer"
+                className="relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 active:scale-90 cursor-pointer"
                 style={{
                   background: isActive ? 'var(--color-accent)' : 'transparent',
-                  color: isActive ? '#ffffff' : 'var(--color-text-secondary)',
+                  color: isActive ? '#ffffff' : 'var(--color-text-tertiary)',
+                  boxShadow: isActive ? '0 4px 12px -2px var(--color-accent-glow)' : 'none',
                 }}>
-                <Icon size={22} />
+                <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
               </button>
             )
           })}
 
           <button onClick={() => setGastoModalOpen(true)}
-            className="flex items-center justify-center w-12 h-12 rounded-2xl shadow-lg transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer"
-            style={{ background: '#ea580c' }}>
-            <Plus size={26} color="#fff" />
+            className="flex items-center justify-center w-12 h-12 rounded-2xl shadow-lg transition-all duration-200 active:scale-90 hover:scale-105 hover:shadow-xl cursor-pointer"
+            style={{
+              background: 'linear-gradient(135deg, #f97316 0%, #ea580c 50%, #dc2626 100%)',
+              boxShadow: '0 4px 16px -2px rgba(249, 115, 22, 0.4)',
+            }}>
+            <Plus size={24} color="#fff" strokeWidth={2.5} />
           </button>
 
           {tabs.slice(2).map((tab) => {
@@ -91,12 +101,13 @@ function Layout() {
             const Icon = tab.icon
             return (
               <button key={tab.path} onClick={() => navigate(tab.path)} aria-label={tab.label}
-                className="flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-150 active:scale-95 cursor-pointer"
+                className="relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 active:scale-90 cursor-pointer"
                 style={{
                   background: isActive ? 'var(--color-accent)' : 'transparent',
-                  color: isActive ? '#ffffff' : 'var(--color-text-secondary)',
+                  color: isActive ? '#ffffff' : 'var(--color-text-tertiary)',
+                  boxShadow: isActive ? '0 4px 12px -2px var(--color-accent-glow)' : 'none',
                 }}>
-                <Icon size={22} />
+                <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
               </button>
             )
           })}

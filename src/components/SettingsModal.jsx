@@ -21,48 +21,53 @@ function SettingsModal({ isOpen, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-t-2xl sm:rounded-2xl p-5"
-        style={{ background: 'var(--color-surface)' }}
+        className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 animate-slide-up"
+        style={{
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
+          boxShadow: '0 24px 48px -12px rgba(0,0,0,0.25)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>
             Configuración
           </h2>
-          <button onClick={onClose} className="cursor-pointer" style={{ color: 'var(--color-text-secondary)' }}>
-            <X size={20} />
+          <button onClick={onClose}
+            className="flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-200 active:scale-90 cursor-pointer"
+            style={{ color: 'var(--color-text-tertiary)', background: 'var(--color-bg-secondary)' }}>
+            <X size={16} />
           </button>
         </div>
 
-        <div className="flex items-center justify-between rounded-xl px-4 py-3" style={{ background: 'var(--color-bg)' }}>
+        <div className="flex items-center justify-between rounded-2xl px-4 py-3.5" style={{ background: 'var(--color-bg-secondary)' }}>
           <div className="flex items-center gap-3">
-            {dark ? <Moon size={18} style={{ color: 'var(--color-accent)' }} /> : <Sun size={18} style={{ color: 'var(--color-text-secondary)' }} />}
-            <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>Modo oscuro</span>
+            {dark ? <Moon size={18} style={{ color: 'var(--color-accent)' }} /> : <Sun size={18} style={{ color: 'var(--color-accent)' }} />}
+            <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>Modo oscuro</span>
           </div>
           <button
             onClick={() => setDark(!dark)}
-            className={`relative w-11 h-6 rounded-full transition-colors cursor-pointer ${
-              dark ? 'bg-blue-600' : 'bg-gray-300'
-            }`}
+            className="relative w-11 h-6 rounded-full transition-all duration-300 cursor-pointer"
+            style={{ background: dark ? 'var(--color-accent)' : 'var(--color-border)' }}
           >
             <span
-              className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                dark ? 'translate-x-5' : 'translate-x-0'
-              }`}
+              className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-300"
+              style={{ transform: dark ? 'translateX(20px)' : 'translateX(0)' }}
             />
           </button>
         </div>
 
-        <div className="mt-5">
-          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>Datos</h3>
+        <div className="mt-6">
+          <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--color-text-tertiary)' }}>Datos</h3>
           <div className="flex flex-col gap-2">
             <button onClick={exportarDatos}
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-150 active:scale-[0.97] cursor-pointer"
-              style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}>
+              className="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all duration-200 active:scale-[0.97] cursor-pointer"
+              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}>
               <Download size={18} style={{ color: 'var(--color-accent)' }} />
               Exportar datos
             </button>
@@ -89,8 +94,8 @@ function SettingsModal({ isOpen, onClose }) {
               }} />
 
             <button onClick={() => fileRef.current?.click()} disabled={importing}
-              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-150 active:scale-[0.97] cursor-pointer disabled:opacity-50"
-              style={{ background: 'var(--color-bg)', color: 'var(--color-text)' }}>
+              className="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all duration-200 active:scale-[0.97] cursor-pointer disabled:opacity-50"
+              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}>
               {importing ? <Loader2 size={18} className="animate-spin" style={{ color: 'var(--color-accent)' }} />
                 : <Upload size={18} style={{ color: 'var(--color-accent)' }} />}
               {importing ? 'Importando...' : 'Importar datos'}

@@ -17,44 +17,68 @@ function Dashboard() {
   useEffect(() => { cargar() }, [cargar])
 
   return (
-    <div className="space-y-4 animate-fade-in-up">
-      <h1 className="text-3xl font-extrabold tracking-tight text-center" style={{ color: 'var(--color-accent)' }}>Dashboard</h1>
-      <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Historial mensual</h2>
+    <div className="space-y-5 animate-fade-in-up">
+      <div className="text-center pt-2">
+        <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: 'var(--color-text)' }}>Dashboard</h1>
+        <p className="text-sm mt-1 font-medium" style={{ color: 'var(--color-text-secondary)' }}>Historial mensual</p>
+      </div>
+
       {resumenes.length === 0 ? (
-        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Todavía no hay cierres de mes</p>
+        <div className="rounded-2xl border p-8 text-center" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+          <p className="text-sm font-medium" style={{ color: 'var(--color-text-tertiary)' }}>Todavía no hay cierres de mes</p>
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {resumenes.map((r, i) => (
-            <div key={r.id} className="rounded-xl p-4 border animate-fade-in-up" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', animationDelay: `${i * 0.08}s` }}>
-              <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text)' }}>{formatearMes(r.mes)}</h3>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                {[
-                  { label: 'Ingresos fijos', value: r.total_ingresos_fijos, color: 'var(--color-positive)', icon: TrendingUp },
-                  { label: 'Ingresos', value: r.total_ingresos_efimeros, color: 'var(--color-positive)', icon: TrendingUp },
-                  { label: 'Gastos fijos', value: r.total_gastos_fijos, color: 'var(--color-negative)', icon: TrendingDown },
-                  { label: 'Gastos diarios', value: r.total_gastos_diarios, color: 'var(--color-negative)', icon: TrendingDown },
-                ].map((item) => {
-                  const Icon = item.icon
-                  return (
-                    <div key={item.label} className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <Icon size={12} style={{ color: item.color }} />
-                        <span style={{ color: 'var(--color-text-secondary)' }}>{item.label}</span>
-                      </div>
-                      <span className="font-medium" style={{ color: item.color }}><AnimatedNumber value={item.value} /></span>
-                    </div>
-                  )
-                })}
-              </div>
-              <hr className="my-2" style={{ borderColor: 'var(--color-border)' }} />
-              <div className="flex items-center justify-between text-sm font-semibold">
-                <div className="flex items-center gap-1.5">
-                  <Wallet size={14} style={{ color: 'var(--color-accent)' }} />
-                  <span style={{ color: 'var(--color-text-secondary)' }}>Total en mano</span>
+            <div key={r.id} className="rounded-2xl p-5 border animate-fade-in-up" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', animationDelay: `${i * 0.08}s` }}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>{formatearMes(r.mes)}</h3>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg" style={{ background: r.total_en_mano >= 0 ? 'var(--color-positive-light)' : 'var(--color-negative-light)' }}>
+                  <Wallet size={12} style={{ color: r.total_en_mano >= 0 ? 'var(--color-positive)' : 'var(--color-negative)' }} />
+                  <span className="text-xs font-bold" style={{ color: r.total_en_mano >= 0 ? 'var(--color-positive)' : 'var(--color-negative)' }}>
+                    <AnimatedNumber value={r.total_en_mano} />
+                  </span>
                 </div>
-                <span style={{ color: r.total_en_mano >= 0 ? 'var(--color-accent)' : 'var(--color-negative)' }}>
-                  <AnimatedNumber value={r.total_en_mano} />
-                </span>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-positive)' }}>Ingresos</p>
+                  <div className="space-y-1.5">
+                    {[
+                      { label: 'Fijos', value: r.total_ingresos_fijos },
+                      { label: 'Ephemeros', value: r.total_ingresos_efimeros },
+                    ].map((item) => (
+                      <div key={item.label} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp size={12} style={{ color: 'var(--color-positive)' }} />
+                          <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{item.label}</span>
+                        </div>
+                        <span className="text-xs font-semibold" style={{ color: 'var(--color-positive)' }}><AnimatedNumber value={item.value} /></span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="h-px" style={{ background: 'var(--color-border)' }} />
+
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--color-negative)' }}>Gastos</p>
+                  <div className="space-y-1.5">
+                    {[
+                      { label: 'Fijos', value: r.total_gastos_fijos },
+                      { label: 'Diarios', value: r.total_gastos_diarios },
+                    ].map((item) => (
+                      <div key={item.label} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <TrendingDown size={12} style={{ color: 'var(--color-negative)' }} />
+                          <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{item.label}</span>
+                        </div>
+                        <span className="text-xs font-semibold" style={{ color: 'var(--color-negative)' }}><AnimatedNumber value={item.value} /></span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           ))}
