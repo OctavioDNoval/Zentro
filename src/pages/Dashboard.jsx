@@ -22,7 +22,7 @@ function Dashboard() {
   const ultimo = resumenes[0]
   const totalIngresos = ultimo ? (ultimo.total_ingresos_fijos ?? 0) + (ultimo.total_ingresos_efimeros ?? 0) : 0
   const totalGastos = ultimo ? (ultimo.total_gastos_fijos ?? 0) + (ultimo.total_gastos_diarios ?? 0) : 0
-  const ahorro = totalIngresos - totalGastos
+  const ahorro = ultimo ? (ultimo.ahorro ?? (totalIngresos - totalGastos)) : 0
 
   if (loading) return <SkeletonDashboard />
 
@@ -112,6 +112,16 @@ function Dashboard() {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                <div className="h-px" style={{ background: 'var(--color-border)' }} />
+
+                <div className="flex items-center justify-between rounded-xl px-3 py-2"
+                  style={{ background: (r.ahorro ?? 0) >= 0 ? 'var(--color-accent-light)' : 'var(--color-negative-light)' }}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: (r.ahorro ?? 0) >= 0 ? 'var(--color-accent)' : 'var(--color-negative)' }}>Ahorrado</span>
+                  <span className="text-xs font-bold" style={{ color: (r.ahorro ?? 0) >= 0 ? 'var(--color-accent)' : 'var(--color-negative)' }}>
+                    <AnimatedNumber value={r.ahorro ?? 0} />
+                  </span>
                 </div>
               </div>
             </div>

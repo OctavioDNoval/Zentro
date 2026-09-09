@@ -54,8 +54,9 @@ function Plantilla() {
   const mesActual = `${meses[new Date().getMonth()]} ${new Date().getFullYear()}`
   const totalGastosFijos = data.gastosFijos.reduce((s, g) => s + g.monto, 0)
   const totalIngresos = data.totalSueldos + data.ingresosEfimeros.reduce((s, i) => s + i.monto, 0)
+  const totalGastosMes = data.gastadoMes + totalGastosFijos
   const porcentajeGastado = totalIngresos > 0 ? Math.min((data.gastadoMes / totalIngresos) * 100, 100) : 0
-  const porcentajeFijos = totalIngresos > 0 ? Math.min((totalGastosFijos / totalIngresos) * 100, 100) : 0
+  const porcentajeFijos = data.totalSueldos > 0 ? Math.min((totalGastosMes / data.totalSueldos) * 100, 100) : 0
   const alertaPresupuesto = totalIngresos > 0 && data.gastadoMes > totalIngresos * 0.8
 
   if (loading) {
@@ -103,10 +104,10 @@ function Plantilla() {
         })}
       </div>
 
-      {totalIngresos > 0 && (
+      {data.totalSueldos > 0 && (
         <div className="rounded-2xl p-4 border animate-fade-in-up" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', animationDelay: '0.16s' }}>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Gastos fijos del mes</span>
+            <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Gastos del mes</span>
             <span className="text-xs font-bold" style={{ color: 'var(--color-negative)' }}>{Math.round(porcentajeFijos)}%</span>
           </div>
           <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-bg-secondary)' }}>
@@ -118,8 +119,8 @@ function Plantilla() {
             />
           </div>
           <div className="flex items-center justify-between mt-2">
-            <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}><AnimatedNumber value={totalGastosFijos} /> / <AnimatedNumber value={totalIngresos} /></span>
-            <span className="text-[10px] font-medium" style={{ color: 'var(--color-text-tertiary)' }}>fijos vs ingresos</span>
+            <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}><AnimatedNumber value={totalGastosMes} /> / <AnimatedNumber value={data.totalSueldos} /></span>
+            <span className="text-[10px] font-medium" style={{ color: 'var(--color-text-tertiary)' }}>gastos vs ingresos fijos</span>
           </div>
         </div>
       )}
