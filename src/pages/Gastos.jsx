@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Tag, Pencil, Search, X } from 'lucide-react'
 import db from '../db/index.js'
+import { actualizarTotal } from '../db/estado-cuenta.js'
 import GastoDiarioModal from '../components/GastoDiarioModal.jsx'
 import GastoFijoModal from '../components/GastoFijoModal.jsx'
 import GastoEditModal from '../components/GastoEditModal.jsx'
@@ -58,10 +59,10 @@ function Gastos() {
 
   const getCat = (id) => data.categorias.find((c) => c.id === id)?.nombre ?? 'Sin categoría'
 
-  const eliminarGasto = async (id) => {
-    await db.gastos_diarios.delete(id)
+  const eliminarGasto = async (g) => {
+    await db.gastos_diarios.delete(g.id)
+    await actualizarTotal(g.monto)
     window.dispatchEvent(new CustomEvent('zentro:data-changed'))
-    cargar()
   }
 
   const gastosFiltrados = data.gastosDiarios.filter((g) => {
@@ -210,7 +211,7 @@ function Gastos() {
         ) : (
           <div className="space-y-2">
             {gastosFiltrados.map((g, i) => (
-              <SwipeToDelete key={g.id} onDelete={() => eliminarGasto(g.id)}>
+              <SwipeToDelete key={g.id} onDelete={() => eliminarGasto(g)}>
                 <button onClick={() => setEditGasto(g)}
                   className="w-full text-left card-base rounded-2xl px-4 py-3 flex items-center gap-3 transition-all duration-200 cursor-pointer active:scale-[0.98] animate-fade-in-up"
                   style={{ animationDelay: `${i * 0.05}s` }}>

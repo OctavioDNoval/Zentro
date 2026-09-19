@@ -1,12 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Trash2, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
+import { actualizarTotal } from '../db/estado-cuenta.js'
 import Modal from './Modal.jsx'
-
-async function actualizarTotal(delta) {
-  const estado = await db.estado_cuenta.get(1)
-  await db.estado_cuenta.update(1, { total_en_mano: (estado?.total_en_mano || 0) + delta, updatedAt: new Date().toISOString() })
-}
 
 function IngresoEfimeroEditModal({ isOpen, onClose, ingreso, onSaved }) {
   const [nombre, setNombre] = useState('')
