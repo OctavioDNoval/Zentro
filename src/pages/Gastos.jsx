@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Plus, Tag, Pencil, Search, X } from 'lucide-react'
 import db from '../db/index.js'
 import { actualizarTotal } from '../db/estado-cuenta.js'
+import { obtenerCotizacionBlue, convertirARS, formatearMonto } from '../db/moneda.js'
 import GastoDiarioModal from '../components/GastoDiarioModal.jsx'
 import GastoFijoModal from '../components/GastoFijoModal.jsx'
 import GastoEditModal from '../components/GastoEditModal.jsx'
@@ -22,6 +23,7 @@ const colorTipo = {
 
 function Gastos() {
   const [data, setData] = useState({ gastosDiarios: [], gastosFijos: [], categorias: [] })
+  const [cotizacion, setCotizacion] = useState(null)
   const [loading, setLoading] = useState(true)
   const [busqueda, setBusqueda] = useState('')
   const [modalDiario, setModalDiario] = useState(false)
@@ -36,12 +38,14 @@ function Gastos() {
       const m = hoy.getMonth(); const y = hoy.getFullYear()
       const inicioStr = `${y}-${String(m + 1).padStart(2, '0')}-01`
       const finStr = m === 11 ? `${y + 1}-01-01` : `${y}-${String(m + 2).padStart(2, '0')}-01`
-      const [gastosDiarios, gastosFijos, categorias] = await Promise.all([
+      const [gastosDiarios, gastosFijos, categorias, cot] = await Promise.all([
         db.gastos_diarios.where('fecha').between(inicioStr, finStr, true, false).reverse().toArray(),
         db.gastos_fijos.where('activo').equals(1).toArray(),
         db.categorias.toArray(),
+        obtenerCotizacionBlue(),
       ])
       setData({ gastosDiarios, gastosFijos, categorias })
+      setCotizacion(cot)
     } catch (err) {
       console.error('Error cargando gastos:', err)
     } finally {
@@ -73,6 +77,8 @@ function Gastos() {
   })
 
   const totalFiltrado = gastosFiltrados.reduce((s, g) => s + g.monto, 0)
+
+  const totalGastosFijosARS = data.gastosFijos.reduce((s, g) => s + convertirARS(g.monto, g.moneda, cotizacion), 0)
 
   if (loading) {
     return (
@@ -107,7 +113,7 @@ function Gastos() {
             style={{ background: 'var(--color-negative-light)', border: '1px solid color-mix(in srgb, var(--color-negative) 20%, transparent)' }}>
             <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>Total mensual</span>
             <span className="text-sm font-bold" style={{ color: 'var(--color-negative)' }}>
-              <AnimatedNumber value={data.gastosFijos.reduce((s, g) => s + g.monto, 0)} />
+              <AnimatedNumber value={totalGastosFijosARS} />
               <span className="text-xs font-normal ml-0.5" style={{ color: 'var(--color-text-tertiary)' }}>/mes</span>
             </span>
           </div>
@@ -143,7 +149,7 @@ function Gastos() {
                       </div>
                     </div>
                   </div>
-                  <span className="text-sm font-bold" style={{ color: 'var(--color-negative)' }}><AnimatedNumber value={g.monto} /></span>
+                  <span className="text-sm font-bold" style={{ color: 'var(--color-negative)' }}><AnimatedNumber value={g.monto} format={(v) => formatearMonto(v, g.moneda)} /></span>
                 </div>
               )
             })}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, ArrowDownRight, Wallet, Pencil, AlertTriangle } from 'lucide-react'
 import db from '../db/index.js'
+import { obtenerCotizacionBlue, convertirARS } from '../db/moneda.js'
 import IngresoFijoModal from '../components/IngresoFijoModal.jsx'
 import IngresoEfimeroModal from '../components/IngresoEfimeroModal.jsx'
 import IngresoFijoEditModal from '../components/IngresoFijoEditModal.jsx'
@@ -14,6 +15,7 @@ const formatearFecha = (s) => { if (!s) return ''; const [y, m, d] = s.split('T'
 
 function Plantilla() {
   const [data, setData] = useState({ ingresosFijos: [], ingresosEfimeros: [], gastadoMes: 0, totalEnMano: 0, gastosFijos: [] })
+  const [cotizacion, setCotizacion] = useState(null)
   const [loading, setLoading] = useState(true)
   const [modalFijo, setModalFijo] = useState(false)
   const [modalEfimero, setModalEfimero] = useState(false)
@@ -26,15 +28,17 @@ function Plantilla() {
       const m = hoy.getMonth(); const y = hoy.getFullYear()
       const inicioStr = `${y}-${String(m + 1).padStart(2, '0')}-01`
       const finStr = m === 11 ? `${y + 1}-01-01` : `${y}-${String(m + 2).padStart(2, '0')}-01`
-      const [ingresosFijos, ingresosEfimeros, gastosDiarios, gastosFijos, estado] = await Promise.all([
+      const [ingresosFijos, ingresosEfimeros, gastosDiarios, gastosFijos, estado, cot] = await Promise.all([
         db.ingresos_fijos.where('activo').equals(1).toArray(),
         db.ingresos_efimeros.where('fecha').between(inicioStr, finStr, true, false).toArray(),
         db.gastos_diarios.where('fecha').between(inicioStr, finStr, true, false).toArray(),
         db.gastos_fijos.where('activo').equals(1).toArray(),
         db.estado_cuenta.get(1),
+        obtenerCotizacionBlue(),
       ])
       const gastadoMes = gastosDiarios.reduce((s, g) => s + g.monto, 0)
       const totalSueldos = ingresosFijos.reduce((s, i) => s + i.monto, 0)
+      setCotizacion(cot)
       setData({ ingresosFijos, ingresosEfimeros, gastadoMes, restanteMes: totalSueldos - gastadoMes, totalEnMano: estado?.total_en_mano ?? 0, totalSueldos, gastosFijos })
     } catch (err) {
       console.error('Error cargando datos:', err)
@@ -52,7 +56,7 @@ function Plantilla() {
   }, [cargar])
 
   const mesActual = `${meses[new Date().getMonth()]} ${new Date().getFullYear()}`
-  const totalGastosFijos = data.gastosFijos.reduce((s, g) => s + g.monto, 0)
+  const totalGastosFijos = data.gastosFijos.reduce((s, g) => s + convertirARS(g.monto, g.moneda, cotizacion), 0)
   const totalIngresos = data.totalSueldos + data.ingresosEfimeros.reduce((s, i) => s + i.monto, 0)
   const totalGastosMes = data.gastadoMes + totalGastosFijos
   const porcentajeGastado = totalIngresos > 0 ? Math.min((data.gastadoMes / totalIngresos) * 100, 100) : 0

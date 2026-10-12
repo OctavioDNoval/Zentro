@@ -1,27 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Plus, RefreshCw, Pencil, Wallet, TrendingUp } from 'lucide-react'
 import db from '../db/index.js'
+import { CASAS, fetchCotizaciones, formatearARS as formatARS, formatearUSD as formatUSD } from '../db/moneda.js'
 import AnimatedNumber from '../components/AnimatedNumber.jsx'
 import AhorroModal from '../components/AhorroModal.jsx'
 import AhorroEditModal from '../components/AhorroEditModal.jsx'
 import { SkeletonCard } from '../components/Skeleton.jsx'
 
-const DOLAR_API = 'https://dolarapi.com/v1/dolares'
-const CASAS = ['blue', 'oficial', 'mep', 'ccl']
 const NOMBRES_CASA = { blue: 'Blue', oficial: 'Oficial', mep: 'MEP', ccl: 'CCL' }
 const COLORES_CASA = {
   blue: { bg: '#1e3a5f', text: '#60a5fa', border: '#2563eb' },
   oficial: { bg: '#052e16', text: '#4ade80', border: '#16a34a' },
   mep: { bg: '#2e1065', text: '#a78bfa', border: '#7c3aed' },
   ccl: { bg: '#431407', text: '#fb923c', border: '#ea580c' },
-}
-
-function formatARS(n) {
-  return '$' + (n ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
-
-function formatUSD(n) {
-  return 'USD ' + (n ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function formatearUltimaActualizacion(fechaStr) {
@@ -33,27 +24,6 @@ function formatearUltimaActualizacion(fechaStr) {
   if (mins < 60) return `hace ${mins} min`
   const hs = Math.floor(mins / 60)
   return `hace ${hs}h ${mins % 60}m`
-}
-
-async function fetchCotizaciones() {
-  try {
-    const res = await fetch(DOLAR_API)
-    if (!res.ok) throw new Error('Error HTTP: ' + res.status)
-    const data = await res.json()
-    const cotizaciones = data.filter(d => CASAS.includes(d.casa))
-    await db.cotizaciones.bulkPut(cotizaciones.map(c => ({
-      casa: c.casa,
-      compra: c.compra,
-      venta: c.venta,
-      nombre: c.nombre,
-      fechaActualizacion: c.fechaActualizacion,
-    })))
-    return cotizaciones
-  } catch (err) {
-    console.error('Error fetching cotizaciones:', err)
-    const cached = await db.cotizaciones.toArray()
-    return cached.length > 0 ? cached : null
-  }
 }
 
 function Ahorros() {

@@ -16,7 +16,9 @@ function IngresoFijoModal({ isOpen, onClose, onSaved }) {
     if (!nombre || !monto) return
     setError('')
     try {
-      await db.ingresos_fijos.add({ nombre, monto: Number(monto), dia_cobro: Number(diaCobro), activo: 1, createdAt: new Date().toISOString() })
+      const hoy = new Date()
+      const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`
+      await db.ingresos_fijos.add({ nombre, monto: Number(monto), dia_cobro: Number(diaCobro), activo: 1, mes_aplicado: sumarAhora ? mesActual : null, createdAt: new Date().toISOString() })
       if (sumarAhora) await actualizarTotal(Number(monto))
       setNombre(''); setMonto(''); setDiaCobro('1'); setSumarAhora(false)
       await onSaved?.()

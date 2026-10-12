@@ -6,6 +6,7 @@ import Modal from './Modal.jsx'
 function GastoFijoEditModal({ isOpen, onClose, gasto, onSaved }) {
   const [nombre, setNombre] = useState('')
   const [monto, setMonto] = useState('')
+  const [moneda, setMoneda] = useState('ARS')
   const [tipo, setTipo] = useState('suscripcion')
   const [totalCuotas, setTotalCuotas] = useState('')
   const [error, setError] = useState('')
@@ -14,6 +15,7 @@ function GastoFijoEditModal({ isOpen, onClose, gasto, onSaved }) {
     if (isOpen && gasto) {
       setNombre(gasto.nombre || '')
       setMonto(String(gasto.monto || ''))
+      setMoneda(gasto.moneda || 'ARS')
       setTipo(gasto.tipo || 'suscripcion')
       setTotalCuotas(String(gasto.total_cuotas || ''))
     }
@@ -23,7 +25,7 @@ function GastoFijoEditModal({ isOpen, onClose, gasto, onSaved }) {
     if (!gasto || !nombre || !monto) return
     setError('')
     try {
-      const data = { nombre, monto: Number(monto), tipo }
+      const data = { nombre, monto: Number(monto), moneda, tipo }
       if (tipo === 'cuotas') data.total_cuotas = Number(totalCuotas)
       await db.gastos_fijos.update(gasto.id, data)
       await onSaved?.()
@@ -60,6 +62,19 @@ function GastoFijoEditModal({ isOpen, onClose, gasto, onSaved }) {
         <input type="number" inputMode="decimal" step="0.01" placeholder="Monto mensual" value={monto} onChange={(e) => setMonto(e.target.value)}
           className={inputClass}
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }} />
+        <div className="flex gap-2">
+          {['ARS', 'USD'].map((m) => (
+            <button key={m} type="button" onClick={() => setMoneda(m)}
+              className="flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 active:scale-[0.98] cursor-pointer border"
+              style={{
+                background: moneda === m ? (m === 'ARS' ? 'var(--color-accent)' : 'var(--color-positive)') : 'var(--color-bg-secondary)',
+                color: moneda === m ? '#fff' : 'var(--color-text-secondary)',
+                borderColor: moneda === m ? 'transparent' : 'var(--color-border)',
+              }}>
+              {m === 'ARS' ? 'ARS $' : 'USD $'}
+            </button>
+          ))}
+        </div>
         <select value={tipo} onChange={(e) => setTipo(e.target.value)}
           className={inputClass}
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}>
