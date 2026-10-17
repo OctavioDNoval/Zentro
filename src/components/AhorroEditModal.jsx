@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Trash2, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
+import { actualizarTotal } from '../db/estado-cuenta.js'
 import Modal from './Modal.jsx'
 
 function AhorroEditModal({ isOpen, onClose, ahorro, onSaved }) {
   const [nombre, setNombre] = useState('')
   const [monto, setMonto] = useState('')
   const [moneda, setMoneda] = useState('ARS')
+  const [descontarDelTotal, setDescontarDelTotal] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -14,6 +16,7 @@ function AhorroEditModal({ isOpen, onClose, ahorro, onSaved }) {
       setNombre(ahorro.nombre || '')
       setMonto(String(ahorro.monto || ''))
       setMoneda(ahorro.moneda || 'ARS')
+      setDescontarDelTotal(ahorro.descontadoDeTotal || false)
     }
   }, [isOpen, ahorro])
 
@@ -21,7 +24,23 @@ function AhorroEditModal({ isOpen, onClose, ahorro, onSaved }) {
     if (!ahorro || !nombre || !monto) return
     setError('')
     try {
-      await db.ahorros.update(ahorro.id, { nombre, monto: Number(monto), moneda, updatedAt: new Date().toISOString() })
+      const oldMonto = ahorro.monto || 0
+      const oldDescontado = ahorro.descontadoDeTotal || false
+      const newMonto = Number(monto)
+      const esARS = moneda === 'ARS'
+      const newDescuenta = esARS && descontarDelTotal
+
+      await db.ahorros.update(ahorro.id, { nombre, monto: newMonto, moneda, descontadoDeTotal: newDescuenta, updatedAt: new Date().toISOString() })
+
+      if (oldDescontado && newDescuenta) {
+        const diff = newMonto - oldMonto
+        if (diff !== 0) await actualizarTotal(-diff)
+      } else if (oldDescontado && !newDescuenta) {
+        await actualizarTotal(oldMonto)
+      } else if (!oldDescontado && newDescuenta) {
+        await actualizarTotal(-newMonto)
+      }
+
       await onSaved?.()
       onClose()
     } catch (err) {
@@ -35,6 +54,7 @@ function AhorroEditModal({ isOpen, onClose, ahorro, onSaved }) {
     setError('')
     try {
       await db.ahorros.delete(ahorro.id)
+      if (ahorro.descontadoDeTotal) await actualizarTotal(ahorro.monto)
       await onSaved?.()
       onClose()
     } catch (err) {
@@ -58,7 +78,10 @@ function AhorroEditModal({ isOpen, onClose, ahorro, onSaved }) {
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }} />
         <div className="flex gap-2">
           {['ARS', 'USD'].map((m) => (
-            <button key={m} type="button" onClick={() => setMoneda(m)}
+            <button key={m} type="button" onClick={() => {
+              setMoneda(m)
+              if (m !== 'ARS') setDescontarDelTotal(false)
+            }}
               className="flex-1 rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 active:scale-[0.98] cursor-pointer border"
               style={{
                 background: moneda === m ? (m === 'ARS' ? 'var(--color-accent)' : 'var(--color-positive)') : 'var(--color-bg-secondary)',
@@ -69,6 +92,13 @@ function AhorroEditModal({ isOpen, onClose, ahorro, onSaved }) {
             </button>
           ))}
         </div>
+        {moneda === 'ARS' && (
+          <label className="flex items-center gap-2.5 text-xs cursor-pointer py-1" style={{ color: 'var(--color-text-secondary)' }}>
+            <input type="checkbox" checked={descontarDelTotal} onChange={(e) => setDescontarDelTotal(e.target.checked)}
+              className="w-4 h-4 rounded cursor-pointer accent-[var(--color-accent)]" />
+            Descontar del total en mano
+          </label>
+        )}
         {error && (
           <div className="flex items-center gap-2 text-xs rounded-xl px-4 py-2.5" style={{ background: 'var(--color-negative-light)', color: 'var(--color-negative)' }}>
             <AlertCircle size={14} /> {error}

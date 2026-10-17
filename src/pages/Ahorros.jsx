@@ -188,6 +188,12 @@ function Ahorros() {
                       style={{ background: a.moneda === 'ARS' ? 'var(--color-accent-light)' : 'var(--color-positive-light)', color: a.moneda === 'ARS' ? 'var(--color-accent)' : 'var(--color-positive)' }}>
                       {a.moneda}
                     </span>
+                    {a.descontadoDeTotal && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-lg font-semibold mt-0.5 inline-block ml-1"
+                        style={{ background: 'var(--color-negative-light)', color: 'var(--color-negative)' }}>
+                        Del total
+                      </span>
+                    )}
                   </div>
                 </div>
                 <p className="text-sm font-bold" style={{ color: a.moneda === 'ARS' ? 'var(--color-accent)' : 'var(--color-positive)' }}>
