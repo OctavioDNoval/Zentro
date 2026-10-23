@@ -64,8 +64,9 @@ function Gastos() {
   const getCat = (id) => data.categorias.find((c) => c.id === id)?.nombre ?? 'Sin categoría'
 
   const eliminarGasto = async (g) => {
+    const monto = Number(g.monto)
     await db.gastos_diarios.delete(g.id)
-    await actualizarTotal(g.monto)
+    if (Number.isFinite(monto) && monto > 0) await actualizarTotal(monto)
     window.dispatchEvent(new CustomEvent('zentro:data-changed'))
   }
 

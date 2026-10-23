@@ -42,8 +42,29 @@ export function convertirARS(monto, moneda, cotizacion) {
   return n * cotizacion
 }
 
+export function parseMonto(valor) {
+  let limpio = String(valor ?? '').trim().replace(/[$\s]/g, '')
+  if (!limpio) return NaN
+  if (limpio.includes(',')) {
+    limpio = limpio.replace(/\./g, '').replace(',', '.')
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(limpio)) {
+    limpio = limpio.replace(/\./g, '')
+  }
+  const n = Number(limpio)
+  return Number.isFinite(n) ? n : NaN
+}
+
+export function esMontoValido(valor) {
+  const n = parseMonto(valor)
+  return Number.isFinite(n) && n > 0
+}
+
 export function formatearARS(n) {
   return '$' + (n ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+export function formatearARSCompacto(n) {
+  return '$' + (Number(n) || 0).toLocaleString('es-AR', { maximumFractionDigits: 2 })
 }
 
 export function formatearUSD(n) {
