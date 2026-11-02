@@ -17,4 +17,8 @@ db.version(3).stores({
   cotizaciones: 'casa',
 })
 
+db.version(4).stores({
+  movimientos_fijos_mensuales: '++id, mes, tipo, referenciaId',
+})
+
 export default db

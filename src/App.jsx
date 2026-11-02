@@ -6,9 +6,11 @@ import Gastos from './pages/Gastos.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Ahorros from './pages/Ahorros.jsx'
 import SplashScreen from './components/SplashScreen.jsx'
+import { useCierreMensual } from './hooks/useCierreMensual.js'
 
 function App({ dbReady }) {
   const [showSplash, setShowSplash] = useState(true)
+  useCierreMensual()
 
   useEffect(() => {
     const theme = localStorage.getItem('theme')

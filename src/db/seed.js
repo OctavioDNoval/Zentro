@@ -22,5 +22,5 @@ export async function seedDatabase() {
     await db.categorias.add(cat)
   }
 
-  await db.estado_cuenta.put({ id: 1, total_en_mano: 0, updatedAt: new Date() })
+  await db.estado_cuenta.put({ id: 1, total_en_mano: 0, mes_fijos_aplicado: null, updatedAt: new Date() })
 }

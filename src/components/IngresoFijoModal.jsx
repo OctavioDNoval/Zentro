@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react'
 import { Plus, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
-import { actualizarTotal } from '../db/estado-cuenta.js'
 import { esMontoValido, parseMonto } from '../db/moneda.js'
 import Modal from './Modal.jsx'
 
@@ -52,8 +51,30 @@ function IngresoFijoModal({ isOpen, onClose, onSaved }) {
       const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`
       setSaving(true)
       savingRef.current = true
-      await db.ingresos_fijos.add({ nombre: nombreLimpiado, monto: montoNum, dia_cobro: dia, activo: 1, mes_aplicado: sumarAhora ? mesActual : null, createdAt: new Date().toISOString() })
-      if (sumarAhora) await actualizarTotal(montoNum)
+      await db.transaction('rw', db.ingresos_fijos, db.movimientos_fijos_mensuales, db.estado_cuenta, async () => {
+        const nuevoId = await db.ingresos_fijos.add({ nombre: nombreLimpiado, monto: montoNum, dia_cobro: dia, activo: 1, mes_aplicado: sumarAhora ? mesActual : null, createdAt: new Date().toISOString() })
+
+        if (sumarAhora) {
+          const estado = await db.estado_cuenta.get(1)
+          const actual = Number.isFinite(estado?.total_en_mano) ? estado.total_en_mano : 0
+          await db.estado_cuenta.update(1, {
+            total_en_mano: actual + montoNum,
+            updatedAt: new Date().toISOString(),
+          })
+          await db.movimientos_fijos_mensuales.add({
+            mes: mesActual,
+            tipo: 'ingreso',
+            referenciaId: nuevoId,
+            nombre: nombreLimpiado,
+            monto: montoNum,
+            moneda: 'ARS',
+            monto_ars: montoNum,
+            cotizacion: 1,
+            origen: 'alta',
+            createdAt: new Date().toISOString(),
+          })
+        }
+      })
       await onSaved?.()
       handleClose()
     } catch (err) {

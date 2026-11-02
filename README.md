@@ -89,19 +89,22 @@ src/
 | `ahorros` | `++id, moneda` | Ahorros en ARS/USD (opcionalmente descontados del total) |
 | `cotizaciones` | `casa` | Última cotización conocida de cada dólar (caché) |
 
-> **Versión de esquema:** Dexie v3. No hay migración `up()`: las tablas v2 se conservan y solo se agregan las nuevas.
+**v4**
+
+| Tabla | Índices | Descripción |
+|---|---|---|
+| `movimientos_fijos_mensuales` | `++id, mes, tipo, referenciaId` | Snapshots de ingresos/gastos fijos aplicados por mes |
+
+> **Versión de esquema:** Dexie v4. Las tablas anteriores se conservan y solo se agrega la nueva.
 
 ## Ciclo mensual automático
 
-Al iniciar la app (`main.jsx` → `ejecutarCicloMensual`), si no existe el resumen del mes anterior:
+El cierre se ejecuta al abrir la app, al volver a ella y con un timer si queda abierta pasada la medianoche. Se separa en dos procesos:
 
-1. Genera `resumen_mensual` del mes anterior (ingresos/gastos fijos, diarios y ahorro)
-2. Procesa gastos fijos (cuotas: incrementa `cuotas_pagadas` y desactiva al completar)
-3. Aplica ingresos fijos una sola vez por mes (`mes_aplicado`)
-4. Actualiza `estado_cuenta.total_en_mano`
-5. Limpia `gastos_diarios`
+1. **Generar reportes pendientes**: calcula y guarda en `resumen_mensual` los ingresos, gastos y diferencia de cada mes faltante, desde el primer dato hasta el mes anterior. No borra movimientos y no modifica el total en mano.
+2. **Aplicar fijos del mes actual**: una sola vez por mes, suma ingresos fijos, resta gastos fijos, procesa cuotas y actualiza `estado_cuenta.total_en_mano`. Guarda un snapshot en `movimientos_fijos_mensuales`.
 
-También ejecuta una limpieza única de resúmenes viejos (`resumenes_migrados`).
+Los reportes incluyen ingresos/gastos fijos y diarios/únicos. La diferencia mensual es solo informativa: no se suma ni se resta al total. Los gastos e ingresos históricos se conservan en la base; las pantallas de movimientos solo muestran el mes actual.
 
 ## Cotizaciones y moneda
 
@@ -118,7 +121,7 @@ También ejecuta una limpieza única de resúmenes viejos (`resumenes_migrados`)
 | Plantilla | `/` | Ingresos fijos + ingresos únicos, cards gastado/total, barra de gastos y alerta al 80% |
 | Gastos | `/gastos` | Gastos fijos activos + gastos diarios con búsqueda y swipe-to-delete |
 | Ahorros | `/ahorros` | Cotizaciones USD + ahorros en ARS/USD y totales convertidos |
-| Dashboard | `/dashboard` | Historial de cierres mensuales |
+| Dashboard | `/dashboard` | Reportes mensuales (ingresos, gastos y diferencia) |
 
 El botón central `+` de la tab bar abre el modal de **gasto diario** desde cualquier pantalla.
 

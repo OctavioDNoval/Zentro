@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Sun, Moon, X, Download, Upload, Loader2 } from 'lucide-react'
 import { exportarDatos, importarDatos } from '../db/exportImport.js'
+import { ejecutarCierreMensual } from '../db/ciclo-mensual.js'
 
 function SettingsModal({ isOpen, onClose }) {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
@@ -83,6 +84,11 @@ function SettingsModal({ isOpen, onClose }) {
                 setImporting(true)
                 try {
                   await importarDatos(file)
+                  try {
+                    await ejecutarCierreMensual()
+                  } catch (err) {
+                    console.error('Error al reconstruir reportes:', err)
+                  }
                   alert('Datos importados correctamente')
                   window.dispatchEvent(new CustomEvent('zentro:data-changed'))
                 } catch (err) {

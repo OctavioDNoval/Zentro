@@ -1,28 +1,16 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { Trash2, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
-import { actualizarTotal } from '../db/estado-cuenta.js'
 import { esMontoValido, parseMonto } from '../db/moneda.js'
 import Modal from './Modal.jsx'
 
 function IngresoFijoEditModal({ isOpen, onClose, ingreso, onSaved }) {
-  const [nombre, setNombre] = useState('')
-  const [monto, setMonto] = useState('')
-  const [diaCobro, setDiaCobro] = useState('1')
+  const [nombre, setNombre] = useState(ingreso?.nombre || '')
+  const [monto, setMonto] = useState(String(ingreso?.monto || ''))
+  const [diaCobro, setDiaCobro] = useState(String(ingreso?.dia_cobro || '1'))
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const savingRef = useRef(false)
-
-  useEffect(() => {
-    if (isOpen && ingreso) {
-      setNombre(ingreso.nombre || '')
-      setMonto(String(ingreso.monto || ''))
-      setDiaCobro(String(ingreso.dia_cobro || '1'))
-      setError('')
-      setSaving(false)
-      savingRef.current = false
-    }
-  }, [isOpen, ingreso])
 
   const mesActual = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
   const aplicadoEsteMes = ingreso?.mes_aplicado === mesActual
@@ -52,9 +40,47 @@ function IngresoFijoEditModal({ isOpen, onClose, ingreso, onSaved }) {
       const oldMonto = Number.isFinite(Number(ingreso.monto)) ? Number(ingreso.monto) : 0
       setSaving(true)
       savingRef.current = true
-      await db.ingresos_fijos.update(ingreso.id, { nombre: nombreLimpiado, monto: newMonto, dia_cobro: dia })
-      const diff = newMonto - oldMonto
-      if (aplicadoEsteMes && diff !== 0) await actualizarTotal(diff)
+      await db.transaction('rw', db.ingresos_fijos, db.movimientos_fijos_mensuales, db.estado_cuenta, async () => {
+        await db.ingresos_fijos.update(ingreso.id, { nombre: nombreLimpiado, monto: newMonto, dia_cobro: dia })
+
+        if (!aplicadoEsteMes) return
+
+        const diff = newMonto - oldMonto
+        if (diff !== 0) {
+          const estado = await db.estado_cuenta.get(1)
+          const actual = Number.isFinite(estado?.total_en_mano) ? estado.total_en_mano : 0
+          await db.estado_cuenta.update(1, {
+            total_en_mano: actual + diff,
+            updatedAt: new Date().toISOString(),
+          })
+        }
+
+        const snapshot = await db.movimientos_fijos_mensuales
+          .where('mes').equals(mesActual)
+          .filter((item) => item.tipo === 'ingreso' && item.referenciaId === ingreso.id)
+          .first()
+
+        const data = {
+          mes: mesActual,
+          tipo: 'ingreso',
+          referenciaId: ingreso.id,
+          nombre: nombreLimpiado,
+          monto: newMonto,
+          moneda: 'ARS',
+          monto_ars: newMonto,
+          cotizacion: 1,
+        }
+
+        if (snapshot) {
+          await db.movimientos_fijos_mensuales.update(snapshot.id, data)
+        } else {
+          await db.movimientos_fijos_mensuales.add({
+            ...data,
+            origen: 'edicion',
+            createdAt: new Date().toISOString(),
+          })
+        }
+      })
       await onSaved?.()
       onClose()
     } catch (err) {
@@ -73,8 +99,29 @@ function IngresoFijoEditModal({ isOpen, onClose, ingreso, onSaved }) {
       const oldMonto = Number.isFinite(Number(ingreso.monto)) ? Number(ingreso.monto) : 0
       setSaving(true)
       savingRef.current = true
-      await db.ingresos_fijos.delete(ingreso.id)
-      if (aplicadoEsteMes && oldMonto > 0) await actualizarTotal(-oldMonto)
+      await db.transaction('rw', db.ingresos_fijos, db.movimientos_fijos_mensuales, db.estado_cuenta, async () => {
+        await db.ingresos_fijos.delete(ingreso.id)
+
+        if (!aplicadoEsteMes) return
+
+        if (oldMonto > 0) {
+          const estado = await db.estado_cuenta.get(1)
+          const actual = Number.isFinite(estado?.total_en_mano) ? estado.total_en_mano : 0
+          await db.estado_cuenta.update(1, {
+            total_en_mano: actual - oldMonto,
+            updatedAt: new Date().toISOString(),
+          })
+        }
+
+        const snapshot = await db.movimientos_fijos_mensuales
+          .where('mes').equals(mesActual)
+          .filter((item) => item.tipo === 'ingreso' && item.referenciaId === ingreso.id)
+          .first()
+
+        if (snapshot) {
+          await db.movimientos_fijos_mensuales.delete(snapshot.id)
+        }
+      })
       await onSaved?.()
       onClose()
     } catch (err) {

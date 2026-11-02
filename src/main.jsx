@@ -4,10 +4,10 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import { seedDatabase } from './db/seed.js'
-import { ejecutarCicloMensual } from './db/ciclo-mensual.js'
+import { ejecutarCierreMensual } from './db/ciclo-mensual.js'
 
 const dbReady = seedDatabase()
-  .then(() => ejecutarCicloMensual())
+  .then(() => ejecutarCierreMensual())
   .catch((err) => console.error('Error en inicialización:', err))
 
 createRoot(document.getElementById('root')).render(
