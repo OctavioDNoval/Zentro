@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { Trash2, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
 import { actualizarTotal } from '../db/estado-cuenta.js'
-import { esMontoValido, parseMonto } from '../db/moneda.js'
+import { esMontoValido, parseMonto, formatearMontoInput } from '../db/moneda.js'
 import Modal from './Modal.jsx'
+import MontoInput from './MontoInput.jsx'
 
 function IngresoEfimeroEditModal({ isOpen, onClose, ingreso, onSaved }) {
   const [nombre, setNombre] = useState('')
@@ -16,7 +17,7 @@ function IngresoEfimeroEditModal({ isOpen, onClose, ingreso, onSaved }) {
   useEffect(() => {
     if (isOpen && ingreso) {
       setNombre(ingreso.nombre || '')
-      setMonto(String(ingreso.monto || ''))
+      setMonto(formatearMontoInput(ingreso.monto ?? ''))
       setFecha(ingreso.fecha || '')
       setError('')
       setSaving(false)
@@ -92,7 +93,7 @@ function IngresoEfimeroEditModal({ isOpen, onClose, ingreso, onSaved }) {
           disabled={saving}
           className={inputClass}
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)', opacity: saving ? 0.6 : 1 }} />
-        <input type="number" inputMode="decimal" step="0.01" placeholder="Monto" value={monto} onChange={(e) => setMonto(e.target.value)}
+        <MontoInput placeholder="Monto" value={monto} onChange={setMonto}
           disabled={saving}
           className={inputClass}
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)', opacity: saving ? 0.6 : 1 }} />

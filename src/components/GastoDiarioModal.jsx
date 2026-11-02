@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import { Plus, Check, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
 import { actualizarTotal } from '../db/estado-cuenta.js'
-import { esMontoValido, parseMonto } from '../db/moneda.js'
+import { esMontoValido, parseMonto, formatearMontoInput } from '../db/moneda.js'
 import { useSugerenciasMonto } from '../hooks/useSugerenciasMonto.js'
 import Modal from './Modal.jsx'
+import MontoInput from './MontoInput.jsx'
 import SugerenciasMonto from './SugerenciasMonto.jsx'
 
 function GastoDiarioModal({ isOpen, onClose, onSaved }) {
@@ -86,11 +87,11 @@ function GastoDiarioModal({ isOpen, onClose, onSaved }) {
           disabled={saving}
           className={inputClass}
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)', opacity: saving ? 0.6 : 1 }} autoFocus />
-        <input type="number" inputMode="decimal" step="0.01" placeholder="Monto" value={monto} onChange={(e) => setMonto(e.target.value)}
+        <MontoInput placeholder="Monto" value={monto} onChange={setMonto}
           disabled={saving}
           className={inputClass}
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)', opacity: saving ? 0.6 : 1 }} />
-        <SugerenciasMonto sugerencias={sugerencias} onSelect={(montoSugerido) => !saving && setMonto(String(montoSugerido))} />
+        <SugerenciasMonto sugerencias={sugerencias} onSelect={(montoSugerido) => !saving && setMonto(formatearMontoInput(montoSugerido))} />
         <select value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)}
           disabled={saving}
           className={inputClass}

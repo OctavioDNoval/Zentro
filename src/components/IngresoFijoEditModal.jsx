@@ -1,12 +1,13 @@
 import { useState, useRef } from 'react'
 import { Trash2, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
-import { esMontoValido, parseMonto } from '../db/moneda.js'
+import { esMontoValido, parseMonto, formatearMontoInput } from '../db/moneda.js'
 import Modal from './Modal.jsx'
+import MontoInput from './MontoInput.jsx'
 
 function IngresoFijoEditModal({ isOpen, onClose, ingreso, onSaved }) {
   const [nombre, setNombre] = useState(ingreso?.nombre || '')
-  const [monto, setMonto] = useState(String(ingreso?.monto || ''))
+  const [monto, setMonto] = useState(formatearMontoInput(ingreso?.monto ?? ''))
   const [diaCobro, setDiaCobro] = useState(String(ingreso?.dia_cobro || '1'))
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -144,7 +145,7 @@ function IngresoFijoEditModal({ isOpen, onClose, ingreso, onSaved }) {
           disabled={saving}
           className={inputClass}
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)', opacity: saving ? 0.6 : 1 }} />
-        <input type="number" inputMode="decimal" step="0.01" placeholder="Monto" value={monto} onChange={(e) => setMonto(e.target.value)}
+        <MontoInput placeholder="Monto" value={monto} onChange={setMonto}
           disabled={saving}
           className={inputClass}
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)', opacity: saving ? 0.6 : 1 }} />

@@ -59,6 +59,40 @@ export function esMontoValido(valor) {
   return Number.isFinite(n) && n > 0
 }
 
+export function formatearMontoInput(valor) {
+  const limpio = String(valor ?? '').replace(/[^\d.,]/g, '')
+  if (!limpio) return ''
+
+  let entero
+  let decimal = ''
+  let comaFinal = false
+
+  if (limpio.includes(',')) {
+    const [parteEntera, parteDecimal] = limpio.split(',')
+    entero = parteEntera.replace(/\./g, '').replace(/\D/g, '')
+    decimal = (parteDecimal || '').replace(/[.,]/g, '').slice(0, 2)
+    comaFinal = limpio.endsWith(',')
+  } else {
+    const partes = limpio.split('.')
+    const esDecimal = partes.length === 2 && partes[1].length >= 1 && partes[1].length <= 2
+
+    if (esDecimal) {
+      entero = partes[0].replace(/\D/g, '')
+      decimal = partes[1].slice(0, 2)
+    } else {
+      entero = limpio.replace(/\D/g, '')
+    }
+  }
+
+  entero = entero.replace(/^0+(?=\d)/, '')
+  if (!entero && decimal) entero = '0'
+  if (!entero && !decimal) return ''
+
+  const enteroFormateado = entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  const sufijo = decimal ? `,${decimal}` : comaFinal ? ',' : ''
+  return `$${enteroFormateado}${sufijo}`
+}
+
 export function formatearARS(n) {
   return '$' + (n ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }

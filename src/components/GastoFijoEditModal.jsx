@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { Trash2, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
-import { esMontoValido, parseMonto } from '../db/moneda.js'
+import { esMontoValido, parseMonto, formatearMontoInput } from '../db/moneda.js'
 import Modal from './Modal.jsx'
+import MontoInput from './MontoInput.jsx'
 
 function GastoFijoEditModal({ isOpen, onClose, gasto, onSaved }) {
   const [nombre, setNombre] = useState('')
@@ -17,7 +18,7 @@ function GastoFijoEditModal({ isOpen, onClose, gasto, onSaved }) {
   useEffect(() => {
     if (isOpen && gasto) {
       setNombre(gasto.nombre || '')
-      setMonto(String(gasto.monto || ''))
+      setMonto(formatearMontoInput(gasto.monto ?? ''))
       setMoneda(gasto.moneda || 'ARS')
       setTipo(gasto.tipo || 'suscripcion')
       setTotalCuotas(String(gasto.total_cuotas || ''))
@@ -107,7 +108,7 @@ function GastoFijoEditModal({ isOpen, onClose, gasto, onSaved }) {
           disabled={saving}
           className={inputClass}
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)', opacity: saving ? 0.6 : 1 }} />
-        <input type="number" inputMode="decimal" step="0.01" placeholder="Monto mensual" value={monto} onChange={(e) => setMonto(e.target.value)}
+        <MontoInput placeholder="Monto mensual" value={monto} onChange={setMonto}
           disabled={saving}
           className={inputClass}
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)', opacity: saving ? 0.6 : 1 }} />

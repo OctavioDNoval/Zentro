@@ -3,6 +3,7 @@ import { Plus, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
 import { esMontoValido, parseMonto } from '../db/moneda.js'
 import Modal from './Modal.jsx'
+import MontoInput from './MontoInput.jsx'
 
 function IngresoFijoModal({ isOpen, onClose, onSaved }) {
   const [nombre, setNombre] = useState('')
@@ -95,7 +96,7 @@ function IngresoFijoModal({ isOpen, onClose, onSaved }) {
           disabled={saving}
           className={inputClass}
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)', opacity: saving ? 0.6 : 1 }} autoFocus />
-        <input type="number" inputMode="decimal" step="0.01" placeholder="Monto" value={monto} onChange={(e) => setMonto(e.target.value)}
+        <MontoInput placeholder="Monto" value={monto} onChange={setMonto}
           disabled={saving}
           className={inputClass}
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)', opacity: saving ? 0.6 : 1 }} />
