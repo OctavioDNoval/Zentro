@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { Sun, Moon, X, Download, Upload, Loader2 } from 'lucide-react'
-import { exportarDatos, importarDatos } from '../db/exportImport.js'
+import { Sun, Moon, X, Download, Upload, Loader2, Trash2 } from 'lucide-react'
+import { exportarDatos, importarDatos, borrarTodosLosDatos } from '../db/exportImport.js'
 import { ejecutarCierreMensual } from '../db/ciclo-mensual.js'
 
 function SettingsModal({ isOpen, onClose }) {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
   const [importing, setImporting] = useState(false)
+  const [resetting, setResetting] = useState(false)
   const fileRef = useRef(null)
 
   useEffect(() => {
@@ -17,6 +18,21 @@ function SettingsModal({ isOpen, onClose }) {
       localStorage.setItem('theme', 'light')
     }
   }, [dark])
+
+  const reiniciarDatos = async () => {
+    const confirmado = window.confirm('¿Reiniciar todos los datos? Se eliminarán movimientos, reportes, ahorros, categorías y el estado de cuenta. Esta acción no se puede deshacer.')
+    if (!confirmado) return
+
+    setResetting(true)
+    try {
+      await borrarTodosLosDatos()
+      window.location.reload()
+    } catch (err) {
+      console.error(err)
+      alert('Error al reiniciar los datos: ' + err.message)
+      setResetting(false)
+    }
+  }
 
   if (!isOpen) return null
 
@@ -99,7 +115,7 @@ function SettingsModal({ isOpen, onClose }) {
                 }
               }} />
 
-            <button onClick={() => fileRef.current?.click()} disabled={importing}
+            <button onClick={() => fileRef.current?.click()} disabled={importing || resetting}
               className="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all duration-200 active:scale-[0.97] cursor-pointer disabled:opacity-50"
               style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}>
               {importing ? <Loader2 size={18} className="animate-spin" style={{ color: 'var(--color-accent)' }} />
@@ -107,6 +123,20 @@ function SettingsModal({ isOpen, onClose }) {
               {importing ? 'Importando...' : 'Importar datos'}
             </button>
           </div>
+        </div>
+
+        <div className="mt-6">
+          <h3 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--color-negative)' }}>Zona de riesgo</h3>
+          <button onClick={reiniciarDatos} disabled={resetting || importing}
+            className="w-full flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition-all duration-200 active:scale-[0.97] cursor-pointer disabled:opacity-50"
+            style={{ background: 'var(--color-negative-light)', color: 'var(--color-negative)', border: '1px solid color-mix(in srgb, var(--color-negative) 20%, transparent)' }}>
+            {resetting ? <Loader2 size={18} className="animate-spin" />
+              : <Trash2 size={18} />}
+            {resetting ? 'Reiniciando...' : 'Borrar todos los datos'}
+          </button>
+          <p className="text-[11px] mt-2 leading-relaxed" style={{ color: 'var(--color-text-tertiary)' }}>
+            Elimina movimientos, reportes, ahorros, categorías y el estado de cuenta. Vuelve al estado inicial.
+          </p>
         </div>
       </div>
     </div>

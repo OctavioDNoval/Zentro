@@ -24,6 +24,16 @@ export async function exportarDatos() {
   URL.revokeObjectURL(url)
 }
 
+export async function borrarTodosLosDatos() {
+  const tables = [...db.tables]
+
+  await db.transaction('rw', ...tables, async () => {
+    for (const table of tables) {
+      await table.clear()
+    }
+  })
+}
+
 export async function importarDatos(file) {
   const text = await file.text()
 
