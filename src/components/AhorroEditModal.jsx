@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import { Trash2, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
 import { actualizarTotal } from '../db/estado-cuenta.js'
-import { esMontoValido, parseMonto, formatearMontoInput } from '../db/moneda.js'
 import Modal from './Modal.jsx'
 import MontoInput from './MontoInput.jsx'
+import { esMontoValido, parseMonto, formatearMontoInput, formatearMonto } from '../db/moneda.js'
+import { confirmarEliminar } from '../utils/confirmar.js'
 
 function AhorroEditModal({ isOpen, onClose, ahorro, onSaved }) {
   const [nombre, setNombre] = useState('')
@@ -74,6 +75,7 @@ function AhorroEditModal({ isOpen, onClose, ahorro, onSaved }) {
 
   const handleDelete = async () => {
     if (!ahorro || savingRef.current) return
+    if (!(await confirmarEliminar({ tipo: 'ahorro', nombre: ahorro.nombre, monto: formatearMonto(ahorro.monto, ahorro.moneda), detalle: ahorro.descontadoDeTotal ? 'El monto vuelve a tu total en mano.' : undefined }))) return
     setError('')
     try {
       const oldMonto = Number.isFinite(Number(ahorro.monto)) ? Number(ahorro.monto) : 0

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
 import SplashScreen from './components/SplashScreen.jsx'
+import ConfirmacionHost from './components/ConfirmacionHost.jsx'
 import { useCierreMensual } from './hooks/useCierreMensual.js'
 
 function App({ dbReady }) {
@@ -31,6 +32,7 @@ function App({ dbReady }) {
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <ConfirmacionHost />
     </>
   )
 }
