@@ -35,7 +35,7 @@ function SwipeToDelete({ children, onDelete, threshold = 80, rounded = true }) {
   }
 
   return (
-    <div className={`relative overflow-hidden ${rounded ? 'rounded-2xl' : ''}`}>
+    <div className={`relative overflow-hidden ${rounded ? 'rounded-2xl' : ''}`} style={{ touchAction: 'pan-y' }}>
       <div
         className={`absolute inset-y-0 right-0 flex items-center justify-center w-16 ${rounded ? 'rounded-r-2xl' : ''}`}
         style={{ background: 'var(--color-negative)', opacity: offset > 0 ? 1 : 0 }}

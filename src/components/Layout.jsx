@@ -1,20 +1,13 @@
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Wallet, CreditCard, BarChart3, Coins, Settings, Plus, Info, PieChart, TrendingUp } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { Settings, Plus, Info } from 'lucide-react'
 import { useState } from 'react'
 import InstallPWA from './InstallPWA.jsx'
 import InstallModal from './InstallModal.jsx'
 import InfoModal from './InfoModal.jsx'
 import SettingsModal from './SettingsModal.jsx'
 import GastoDiarioModal from './GastoDiarioModal.jsx'
-
-const tabs = [
-  { path: '/ingresos', label: 'Ingresos', icon: TrendingUp },
-  { path: '/', label: 'Plantilla', icon: Wallet },
-  { path: '/gastos', label: 'Gastos', icon: CreditCard },
-  { path: '/ahorros', label: 'Ahorros', icon: Coins },
-  { path: '/dashboard', label: 'Dashboard', icon: BarChart3 },
-  { path: '/estadisticas', label: 'Estadísticas', icon: PieChart },
-]
+import PaginasDeslizables from './PaginasDeslizables.jsx'
+import { tabs, indiceDeRuta } from '../navegacion.js'
 
 function Layout() {
   const location = useLocation()
@@ -22,11 +15,15 @@ function Layout() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [infoOpen, setInfoOpen] = useState(false)
   const [gastoModalOpen, setGastoModalOpen] = useState(false)
+  // Pestaña resaltada mientras se desliza (antes de que cambie la URL)
+  const [vivo, setVivo] = useState(null)
+  const indiceRuta = indiceDeRuta(location.pathname)
+  const activo = vivo ?? indiceRuta
 
   return (
-    <div className="flex flex-col min-h-svh" style={{ background: 'var(--color-bg)' }}>
+    <div className="flex flex-col h-svh overflow-hidden" style={{ background: 'var(--color-bg)' }}>
       <header
-        className="flex items-center justify-between px-4 py-3 sticky top-0 z-10"
+        className="flex items-center justify-between px-4 py-3 shrink-0 z-10"
         style={{
           background: 'color-mix(in srgb, var(--color-bg) 80%, transparent)',
           backdropFilter: 'blur(20px) saturate(1.2)',
@@ -54,9 +51,7 @@ function Layout() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-4 py-5 pb-28">
-        <Outlet />
-      </main>
+      <PaginasDeslizables onIndiceVivo={setVivo} />
 
       <div className="fixed bottom-28 right-4 z-20">
         <InstallPWA />
@@ -73,11 +68,11 @@ function Layout() {
             boxShadow: '0 8px 32px -4px rgba(0,0,0,0.15), 0 0 0 1px color-mix(in srgb, var(--color-border) 30%, transparent)',
           }}
         >
-          {tabs.slice(0, 3).map((tab) => {
-            const isActive = location.pathname === tab.path
+          {tabs.slice(0, 3).map((tab, i) => {
+            const isActive = activo === i
             const Icon = tab.icon
             return (
-              <button key={tab.path} onClick={() => navigate(tab.path)} aria-label={tab.label}
+              <button key={tab.path} onClick={() => { setVivo(null); navigate(tab.path) }} aria-label={tab.label}
                 className="relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 active:scale-90 cursor-pointer"
                 style={{
                   background: isActive ? 'var(--color-accent)' : 'transparent',
@@ -98,11 +93,11 @@ function Layout() {
             <Plus size={24} color="#fff" strokeWidth={2.5} />
           </button>
 
-          {tabs.slice(3).map((tab) => {
-            const isActive = location.pathname === tab.path
+          {tabs.slice(3).map((tab, j) => {
+            const isActive = activo === j + 3
             const Icon = tab.icon
             return (
-              <button key={tab.path} onClick={() => navigate(tab.path)} aria-label={tab.label}
+              <button key={tab.path} onClick={() => { setVivo(null); navigate(tab.path) }} aria-label={tab.label}
                 className="relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 active:scale-90 cursor-pointer"
                 style={{
                   background: isActive ? 'var(--color-accent)' : 'transparent',
