@@ -66,11 +66,11 @@ const pasos = [
   },
   {
     icon: Calendar, color: '#2563eb', path: '/dashboard', seccion: 'Dashboard',
-    titulo: 'Cierre de cada mes',
+    titulo: 'Dashboard y cierre de mes',
     puntos: [
-      'Al empezar un mes nuevo, la primera vez que abrís la app, se hace todo solo:',
-      'Se guarda el reporte del mes anterior en el Dashboard.',
-      'Se suman los ingresos fijos, se descuentan los gastos fijos y avanzan las cuotas.',
+      'En el Dashboard ves el balance del mes en curso en vivo, tu evolución y los meses cerrados.',
+      'El balance es solo un cálculo (ingresos − gastos): nunca cambia tu total en mano.',
+      'Al empezar un mes nuevo se guarda el reporte del anterior, se suman los ingresos fijos, se descuentan los gastos fijos y avanzan las cuotas.',
       'Los gastos del mes arrancan de cero; los anteriores siguen en Estadísticas.',
     ],
   },
