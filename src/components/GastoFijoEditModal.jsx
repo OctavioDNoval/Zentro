@@ -3,8 +3,8 @@ import { Trash2, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
 import Modal from './Modal.jsx'
 import MontoInput from './MontoInput.jsx'
-import { esMontoValido, parseMonto, formatearMontoInput, formatearMonto } from '../db/moneda.js'
-import { confirmarEliminar } from '../utils/confirmar.js'
+import { esMontoValido, parseMonto, formatearMontoInput } from '../db/moneda.js'
+import { eliminarGastoFijo } from '../db/eliminar.js'
 
 function GastoFijoEditModal({ isOpen, onClose, gasto, onSaved }) {
   const [nombre, setNombre] = useState('')
@@ -82,14 +82,14 @@ function GastoFijoEditModal({ isOpen, onClose, gasto, onSaved }) {
 
   const handleDelete = async () => {
     if (!gasto || savingRef.current) return
-    if (!(await confirmarEliminar({ tipo: 'gasto fijo', nombre: gasto.nombre, monto: formatearMonto(gasto.monto, gasto.moneda) }))) return
     setError('')
+    savingRef.current = true
+    setSaving(true)
     try {
-      setSaving(true)
-      savingRef.current = true
-      await db.gastos_fijos.delete(gasto.id)
-      await onSaved?.()
-      onClose()
+      if (await eliminarGastoFijo(gasto)) {
+        await onSaved?.()
+        onClose()
+      }
     } catch (err) {
       console.error(err)
       setError(err.message || 'Error al eliminar')

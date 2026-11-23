@@ -4,8 +4,8 @@ import db from '../db/index.js'
 import { actualizarTotal } from '../db/estado-cuenta.js'
 import Modal from './Modal.jsx'
 import MontoInput from './MontoInput.jsx'
-import { esMontoValido, parseMonto, formatearMontoInput, formatearARSCompacto } from '../db/moneda.js'
-import { confirmarEliminar } from '../utils/confirmar.js'
+import { esMontoValido, parseMonto, formatearMontoInput } from '../db/moneda.js'
+import { eliminarIngresoEfimero } from '../db/eliminar.js'
 
 function IngresoEfimeroEditModal({ isOpen, onClose, ingreso, onSaved }) {
   const [nombre, setNombre] = useState('')
@@ -65,16 +65,14 @@ function IngresoEfimeroEditModal({ isOpen, onClose, ingreso, onSaved }) {
 
   const handleDelete = async () => {
     if (!ingreso || savingRef.current) return
-    if (!(await confirmarEliminar({ tipo: 'ingreso', nombre: ingreso.nombre, monto: formatearARSCompacto(ingreso.monto), detalle: 'El monto se descuenta de tu total en mano.' }))) return
     setError('')
+    savingRef.current = true
+    setSaving(true)
     try {
-      const oldMonto = Number.isFinite(Number(ingreso.monto)) ? Number(ingreso.monto) : 0
-      setSaving(true)
-      savingRef.current = true
-      await db.ingresos_efimeros.delete(ingreso.id)
-      if (oldMonto > 0) await actualizarTotal(-oldMonto)
-      await onSaved?.()
-      onClose()
+      if (await eliminarIngresoEfimero(ingreso)) {
+        await onSaved?.()
+        onClose()
+      }
     } catch (err) {
       console.error(err)
       setError(err.message || 'Error al eliminar')

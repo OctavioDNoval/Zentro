@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Trash2, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
-import { actualizarTotal } from '../db/estado-cuenta.js'
 import Modal from './Modal.jsx'
-import { confirmarEliminar } from '../utils/confirmar.js'
-import { formatearARSCompacto } from '../db/moneda.js'
+import { eliminarGastoDiario } from '../db/eliminar.js'
 
 function GastoEditModal({ isOpen, onClose, gasto, onSaved }) {
   const [categoriaId, setCategoriaId] = useState(1)
@@ -43,16 +41,14 @@ function GastoEditModal({ isOpen, onClose, gasto, onSaved }) {
 
   const handleDelete = async () => {
     if (!gasto || savingRef.current) return
-    if (!(await confirmarEliminar({ tipo: 'gasto', nombre: gasto.concepto, monto: formatearARSCompacto(gasto.monto), detalle: 'El monto vuelve a tu total en mano.' }))) return
     setError('')
+    savingRef.current = true
+    setSaving(true)
     try {
-      const monto = Number(gasto.monto)
-      setSaving(true)
-      savingRef.current = true
-      await db.gastos_diarios.delete(gasto.id)
-      if (Number.isFinite(monto) && monto > 0) await actualizarTotal(monto)
-      await onSaved?.()
-      onClose()
+      if (await eliminarGastoDiario(gasto)) {
+        await onSaved?.()
+        onClose()
+      }
     } catch (err) {
       console.error(err)
       setError(err.message || 'Error al eliminar')

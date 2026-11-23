@@ -8,12 +8,10 @@ import IngresoEfimeroEditModal from '../components/IngresoEfimeroEditModal.jsx'
 import AnimatedNumber from '../components/AnimatedNumber.jsx'
 import { EncabezadoPagina, ResumenMes, EncabezadoSeccion, BotonAgregar, EstadoVacio, ListaCard, SkeletonPagina } from '../components/Seccion.jsx'
 import SwipeToDelete from '../components/SwipeToDelete.jsx'
-import { actualizarTotal } from '../db/estado-cuenta.js'
+import { eliminarIngresoEfimero, eliminarIngresoFijo } from '../db/eliminar.js'
 import GrupoFecha, { FilaMovimiento, Chip } from '../components/GrupoFecha.jsx'
 import IconoMovimiento from '../components/IconoMovimiento.jsx'
 import { agruparPorFecha } from '../utils/fechas.js'
-import { confirmarEliminar } from '../utils/confirmar.js'
-import { formatearARSCompacto } from '../db/moneda.js'
 
 const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
@@ -51,12 +49,6 @@ function Ingresos() {
     return () => window.removeEventListener('zentro:data-changed', handler)
   }, [cargar])
 
-  const eliminarIngreso = async (ing) => {
-    if (!(await confirmarEliminar({ tipo: 'ingreso', nombre: ing.nombre, monto: formatearARSCompacto(ing.monto), detalle: 'El monto se descuenta de tu total en mano.' }))) return
-    const monto = Number(ing.monto)
-    await db.ingresos_efimeros.delete(ing.id)
-    if (Number.isFinite(monto) && monto > 0) await actualizarTotal(-monto)
-  }
 
   const mesActual = `${meses[new Date().getMonth()]} ${new Date().getFullYear()}`
   const totalFijos = data.ingresosFijos.reduce((s, i) => s + i.monto, 0)
@@ -81,12 +73,14 @@ function Ingresos() {
         ) : (
           <ListaCard>
             {data.ingresosFijos.map((ing) => (
-              <FilaMovimiento key={ing.id} onClick={() => setEditFijo(ing)}
-                icono={<IconoMovimiento tipo="sueldo" />}
-                titulo={ing.nombre}
-                subtitulo={<Chip color="#16a34a">Cobra el día {ing.dia_cobro}</Chip>}
-                monto={<>+<AnimatedNumber value={ing.monto} /></>}
-                color="var(--color-positive)" />
+              <SwipeToDelete key={ing.id} rounded={false} onDelete={() => eliminarIngresoFijo(ing)}>
+                <FilaMovimiento onClick={() => setEditFijo(ing)}
+                  icono={<IconoMovimiento tipo="sueldo" />}
+                  titulo={ing.nombre}
+                  subtitulo={<Chip color="#16a34a">Cobra el día {ing.dia_cobro}</Chip>}
+                  monto={<>+<AnimatedNumber value={ing.monto} /></>}
+                  color="var(--color-positive)" />
+              </SwipeToDelete>
             ))}
           </ListaCard>
         )}
@@ -103,7 +97,7 @@ function Ingresos() {
             {agruparPorFecha(data.ingresosEfimeros).map((grupo, gi) => (
               <GrupoFecha key={grupo.fecha} etiqueta={grupo.etiqueta} total={grupo.total} delay={gi * 0.05}>
                 {grupo.items.map((ing) => (
-                  <SwipeToDelete key={ing.id} rounded={false} onDelete={() => eliminarIngreso(ing)}>
+                  <SwipeToDelete key={ing.id} rounded={false} onDelete={() => eliminarIngresoEfimero(ing)}>
                     <FilaMovimiento onClick={() => setEditEfimero(ing)}
                       icono={<IconoMovimiento tipo="ingreso" />}
                       titulo={ing.nombre}
