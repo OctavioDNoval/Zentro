@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Pencil, TrendingUp } from 'lucide-react'
+import { Plus, TrendingUp } from 'lucide-react'
 import db from '../db/index.js'
 import IngresoFijoModal from '../components/IngresoFijoModal.jsx'
 import IngresoEfimeroModal from '../components/IngresoEfimeroModal.jsx'
@@ -7,10 +7,11 @@ import IngresoFijoEditModal from '../components/IngresoFijoEditModal.jsx'
 import IngresoEfimeroEditModal from '../components/IngresoEfimeroEditModal.jsx'
 import AnimatedNumber from '../components/AnimatedNumber.jsx'
 import { SkeletonCard } from '../components/Skeleton.jsx'
+import GrupoFecha, { FilaMovimiento, Chip } from '../components/GrupoFecha.jsx'
+import IconoMovimiento from '../components/IconoMovimiento.jsx'
+import { agruparPorFecha } from '../utils/fechas.js'
 
 const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-
-const formatearFecha = (s) => { if (!s) return ''; const [y, m, d] = s.split('T')[0].split('-'); return `${+d}/${+m}/${y}` }
 
 function Ingresos() {
   const [data, setData] = useState({ ingresosFijos: [], ingresosEfimeros: [] })
@@ -104,22 +105,15 @@ function Ingresos() {
             <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Sin ingresos fijos cargados</p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {data.ingresosFijos.map((ing, i) => (
-              <div key={ing.id} className="card-base rounded-2xl px-4 py-3 flex justify-between items-center animate-fade-in-up cursor-pointer active:scale-[0.98]"
-                style={{ animationDelay: `${i * 0.05}s` }}
-                onClick={() => setEditFijo(ing)}>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-xl" style={{ background: 'var(--color-positive-light)' }}>
-                    <Pencil size={14} style={{ color: 'var(--color-positive)' }} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{ing.nombre}</p>
-                    <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Día {ing.dia_cobro}</p>
-                  </div>
-                </div>
-                <p className="text-sm font-bold" style={{ color: 'var(--color-positive)' }}><AnimatedNumber value={ing.monto} /></p>
-              </div>
+          <div className="rounded-2xl border overflow-hidden animate-fade-in-up [&>*+*]:border-t [&>*+*]:border-[var(--color-border-subtle)]"
+            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+            {data.ingresosFijos.map((ing) => (
+              <FilaMovimiento key={ing.id} onClick={() => setEditFijo(ing)}
+                icono={<IconoMovimiento tipo="sueldo" />}
+                titulo={ing.nombre}
+                subtitulo={<Chip color="#16a34a">Cobra el día {ing.dia_cobro}</Chip>}
+                monto={<>+<AnimatedNumber value={ing.monto} /></>}
+                color="var(--color-positive)" />
             ))}
           </div>
         )}
@@ -127,7 +121,7 @@ function Ingresos() {
 
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>Ingresos</h3>
+          <h3 className="text-sm font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>Ingresos variables</h3>
           <button onClick={() => setModalEfimero(true)}
             className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer transition-all duration-200 active:scale-95 px-3 py-1.5 rounded-xl"
             style={{ color: 'var(--color-accent)', background: 'var(--color-accent-glow)' }}>
@@ -139,22 +133,17 @@ function Ingresos() {
             <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Sin ingresos este mes</p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {data.ingresosEfimeros.map((ing, i) => (
-              <div key={ing.id} className="card-base rounded-2xl px-4 py-3 flex justify-between items-center animate-fade-in-up cursor-pointer active:scale-[0.98]"
-                style={{ animationDelay: `${i * 0.05}s` }}
-                onClick={() => setEditEfimero(ing)}>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-xl" style={{ background: 'var(--color-positive-light)' }}>
-                    <Pencil size={14} style={{ color: 'var(--color-positive)' }} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{ing.nombre}</p>
-                    <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{formatearFecha(ing.fecha)}</p>
-                  </div>
-                </div>
-                <p className="text-sm font-bold" style={{ color: 'var(--color-positive)' }}><AnimatedNumber value={ing.monto} /></p>
-              </div>
+          <div className="space-y-4">
+            {agruparPorFecha(data.ingresosEfimeros).map((grupo, gi) => (
+              <GrupoFecha key={grupo.fecha} etiqueta={grupo.etiqueta} total={grupo.total} delay={gi * 0.05}>
+                {grupo.items.map((ing) => (
+                  <FilaMovimiento key={ing.id} onClick={() => setEditEfimero(ing)}
+                    icono={<IconoMovimiento tipo="ingreso" />}
+                    titulo={ing.nombre}
+                    monto={<>+<AnimatedNumber value={ing.monto} /></>}
+                    color="var(--color-positive)" />
+                ))}
+              </GrupoFecha>
             ))}
           </div>
         )}
