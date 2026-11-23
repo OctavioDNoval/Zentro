@@ -1,20 +1,22 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Tag, Search, X } from 'lucide-react'
+import { Tag, Search, X, TrendingDown } from 'lucide-react'
 import db from '../db/index.js'
 import { actualizarTotal } from '../db/estado-cuenta.js'
-import { obtenerCotizacionBlue, convertirARS, formatearMonto } from '../db/moneda.js'
+import { obtenerCotizacionBlue, convertirARS, formatearMonto, formatearARSCompacto } from '../db/moneda.js'
 import GastoDiarioModal from '../components/GastoDiarioModal.jsx'
 import GastoFijoModal from '../components/GastoFijoModal.jsx'
 import GastoEditModal from '../components/GastoEditModal.jsx'
 import GastoFijoEditModal from '../components/GastoFijoEditModal.jsx'
 import CategoriaModal from '../components/CategoriaModal.jsx'
 import AnimatedNumber from '../components/AnimatedNumber.jsx'
-import { SkeletonCard } from '../components/Skeleton.jsx'
+import { EncabezadoPagina, ResumenMes, EncabezadoSeccion, BotonAgregar, EstadoVacio, ListaCard, SkeletonPagina } from '../components/Seccion.jsx'
 import SwipeToDelete from '../components/SwipeToDelete.jsx'
 import GrupoFecha, { FilaMovimiento, Chip } from '../components/GrupoFecha.jsx'
 import IconoMovimiento from '../components/IconoMovimiento.jsx'
 import { estiloTipo } from '../utils/iconos.js'
 import { agruparPorFecha } from '../utils/fechas.js'
+
+const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
 const etiquetaTipo = { suscripcion: 'Suscripción', servicio: 'Servicio', cuotas: 'Cuotas' }
 
@@ -78,51 +80,27 @@ function Gastos() {
 
   const totalGastosFijosARS = data.gastosFijos.reduce((s, g) => s + convertirARS(g.monto, g.moneda, cotizacion), 0)
 
-  if (loading) {
-    return (
-      <div className="space-y-6 animate-fade-in-up">
-        <div className="text-center pt-2">
-          <div className="h-7 w-20 mx-auto rounded-lg" style={{ background: 'linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-border) 50%, var(--color-bg-secondary) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s ease-in-out infinite' }} />
-        </div>
-        <SkeletonCard lines={[70, 40]} />
-        <SkeletonCard lines={[60, 35]} />
-        <SkeletonCard lines={[55, 30]} />
-      </div>
-    )
-  }
+  const totalDiarios = data.gastosDiarios.reduce((s, g) => s + g.monto, 0)
+  const mesActual = `${meses[new Date().getMonth()]} ${new Date().getFullYear()}`
+
+  if (loading) return <SkeletonPagina />
 
   return (
     <div className="space-y-6 animate-fade-in-up">
-      <div className="text-center pt-2">
-        <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: 'var(--color-text)' }}>Gastos</h1>
-      </div>
+      <EncabezadoPagina titulo="Gastos" subtitulo={mesActual} />
+
+      <ResumenMes titulo="Gastos del mes" total={totalGastosFijosARS + totalDiarios}
+        color="var(--color-negative)" colorSuave="var(--color-negative-light)" icon={TrendingDown}
+        items={[{ label: 'Fijos', value: totalGastosFijosARS }, { label: 'Diarios', value: totalDiarios }]} />
 
       <section>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>Gastos fijos</h3>
-          <button onClick={() => setModalFijo(true)}
-            className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer transition-all duration-200 active:scale-95 px-3 py-1.5 rounded-xl"
-            style={{ color: 'var(--color-accent)', background: 'var(--color-accent-glow)' }}>
-            <Plus size={14} /> Agregar
-          </button>
-        </div>
-        {data.gastosFijos.length > 0 && (
-          <div className="flex items-center justify-between rounded-2xl px-4 py-2.5 mb-3 animate-fade-in-up"
-            style={{ background: 'var(--color-negative-light)', border: '1px solid color-mix(in srgb, var(--color-negative) 20%, transparent)' }}>
-            <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>Total mensual</span>
-            <span className="text-sm font-bold" style={{ color: 'var(--color-negative)' }}>
-              <AnimatedNumber value={totalGastosFijosARS} />
-              <span className="text-xs font-normal ml-0.5" style={{ color: 'var(--color-text-tertiary)' }}>/mes</span>
-            </span>
-          </div>
-        )}
+        <EncabezadoSeccion titulo="Gastos fijos">
+          <BotonAgregar onClick={() => setModalFijo(true)} />
+        </EncabezadoSeccion>
         {data.gastosFijos.length === 0 ? (
-          <div className="rounded-2xl border p-5 text-center" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-            <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Sin gastos fijos</p>
-          </div>
+          <EstadoVacio>Sin gastos fijos cargados</EstadoVacio>
         ) : (
-          <div className="rounded-2xl border overflow-hidden animate-fade-in-up [&>*+*]:border-t [&>*+*]:border-[var(--color-border-subtle)]"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+          <ListaCard>
             {data.gastosFijos.map((g) => {
               const { color } = estiloTipo(g.tipo)
               return (
@@ -143,30 +121,19 @@ function Gastos() {
                       <span className="text-[10px] font-medium tabular-nums" style={{ color: 'var(--color-text-tertiary)' }}>{g.cuotas_pagadas}/{g.total_cuotas}</span>
                     </div>
                   )}
-                  monto={<AnimatedNumber value={g.monto} format={(v) => formatearMonto(v, g.moneda)} />}
+                  monto={<>−<AnimatedNumber value={g.monto} format={(v) => (g.moneda === 'USD' ? formatearMonto(v, 'USD') : formatearARSCompacto(v))} /></>}
                   color="var(--color-negative)" />
               )
             })}
-          </div>
+          </ListaCard>
         )}
       </section>
 
       <section>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>Gastos del mes</h3>
-          <div className="flex gap-2">
-            <button onClick={() => setModalCategoria(true)}
-              className="flex items-center gap-1.5 text-xs font-medium cursor-pointer transition-all duration-200 active:scale-95 px-3 py-1.5 rounded-xl"
-              style={{ color: 'var(--color-text-secondary)', background: 'var(--color-bg-secondary)' }}>
-              <Tag size={12} /> Categoría
-            </button>
-            <button onClick={() => setModalDiario(true)}
-              className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer transition-all duration-200 active:scale-95 px-3 py-1.5 rounded-xl"
-              style={{ color: 'var(--color-accent)', background: 'var(--color-accent-glow)' }}>
-              <Plus size={14} /> Agregar
-            </button>
-          </div>
-        </div>
+        <EncabezadoSeccion titulo="Gastos diarios">
+          <BotonAgregar secundario icon={Tag} onClick={() => setModalCategoria(true)}>Categoría</BotonAgregar>
+          <BotonAgregar onClick={() => setModalDiario(true)} />
+        </EncabezadoSeccion>
 
         {data.gastosDiarios.length > 0 && (
           <div className="relative mb-3">
@@ -201,13 +168,9 @@ function Gastos() {
         )}
 
         {data.gastosDiarios.length === 0 ? (
-          <div className="rounded-2xl border p-5 text-center" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-            <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Sin gastos este mes</p>
-          </div>
+          <EstadoVacio>Sin gastos este mes</EstadoVacio>
         ) : gastosFiltrados.length === 0 ? (
-          <div className="rounded-2xl border p-5 text-center" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-            <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Sin resultados para "{busqueda}"</p>
-          </div>
+          <EstadoVacio>Sin resultados para "{busqueda}"</EstadoVacio>
         ) : (
           <div className="space-y-4">
             {agruparPorFecha(gastosFiltrados).map((grupo, gi) => (
@@ -221,7 +184,7 @@ function Gastos() {
                         titulo={g.concepto}
                         subtitulo={<span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{cat}</span>}
                         monto={<>−<AnimatedNumber value={g.monto} /></>}
-                        color="var(--color-text)" />
+                        color="var(--color-negative)" />
                     </SwipeToDelete>
                   )
                 })}

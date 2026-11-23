@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, TrendingUp } from 'lucide-react'
+import { TrendingUp } from 'lucide-react'
 import db from '../db/index.js'
 import IngresoFijoModal from '../components/IngresoFijoModal.jsx'
 import IngresoEfimeroModal from '../components/IngresoEfimeroModal.jsx'
 import IngresoFijoEditModal from '../components/IngresoFijoEditModal.jsx'
 import IngresoEfimeroEditModal from '../components/IngresoEfimeroEditModal.jsx'
 import AnimatedNumber from '../components/AnimatedNumber.jsx'
-import { SkeletonCard } from '../components/Skeleton.jsx'
+import { EncabezadoPagina, ResumenMes, EncabezadoSeccion, BotonAgregar, EstadoVacio, ListaCard, SkeletonPagina } from '../components/Seccion.jsx'
+import SwipeToDelete from '../components/SwipeToDelete.jsx'
+import { actualizarTotal } from '../db/estado-cuenta.js'
 import GrupoFecha, { FilaMovimiento, Chip } from '../components/GrupoFecha.jsx'
 import IconoMovimiento from '../components/IconoMovimiento.jsx'
 import { agruparPorFecha } from '../utils/fechas.js'
@@ -47,66 +49,35 @@ function Ingresos() {
     return () => window.removeEventListener('zentro:data-changed', handler)
   }, [cargar])
 
+  const eliminarIngreso = async (ing) => {
+    const monto = Number(ing.monto)
+    await db.ingresos_efimeros.delete(ing.id)
+    if (Number.isFinite(monto) && monto > 0) await actualizarTotal(-monto)
+    window.dispatchEvent(new CustomEvent('zentro:data-changed'))
+  }
+
   const mesActual = `${meses[new Date().getMonth()]} ${new Date().getFullYear()}`
   const totalFijos = data.ingresosFijos.reduce((s, i) => s + i.monto, 0)
   const totalEfimeros = data.ingresosEfimeros.reduce((s, i) => s + i.monto, 0)
 
-  if (loading) {
-    return (
-      <div className="space-y-6 animate-fade-in-up">
-        <SkeletonCard lines={[50, 30]} />
-        <SkeletonCard lines={[70, 40]} />
-        <SkeletonCard lines={[60, 35]} />
-      </div>
-    )
-  }
+  if (loading) return <SkeletonPagina />
 
   return (
     <div className="space-y-6 animate-fade-in-up">
-      <div className="text-center pt-2">
-        <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: 'var(--color-text)' }}>Ingresos</h1>
-        <p className="text-sm mt-1 font-medium" style={{ color: 'var(--color-text-secondary)' }}>{mesActual}</p>
-      </div>
+      <EncabezadoPagina titulo="Ingresos" subtitulo={mesActual} />
 
-      <div className="rounded-2xl p-4 border animate-scale-in" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Ingresos del mes</span>
-          <div className="flex items-center justify-center w-7 h-7 rounded-lg" style={{ background: 'var(--color-positive-light)' }}>
-            <TrendingUp size={14} style={{ color: 'var(--color-positive)' }} />
-          </div>
-        </div>
-        <p className="mt-1 text-3xl font-extrabold tracking-tight tabular-nums" style={{ color: 'var(--color-positive)' }}>
-          <AnimatedNumber value={totalFijos + totalEfimeros} />
-        </p>
-        <div className="grid grid-cols-2 gap-2 mt-3">
-          {[
-            { label: 'Fijos', value: totalFijos },
-            { label: 'Variables', value: totalEfimeros },
-          ].map((item) => (
-            <div key={item.label} className="rounded-xl px-3 py-2" style={{ background: 'var(--color-bg-secondary)' }}>
-              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>{item.label}</p>
-              <p className="text-sm font-bold tabular-nums" style={{ color: 'var(--color-text)' }}><AnimatedNumber value={item.value} /></p>
-            </div>
-          ))}
-        </div>
-      </div>
+      <ResumenMes titulo="Ingresos del mes" total={totalFijos + totalEfimeros}
+        color="var(--color-positive)" colorSuave="var(--color-positive-light)" icon={TrendingUp}
+        items={[{ label: 'Fijos', value: totalFijos }, { label: 'Variables', value: totalEfimeros }]} />
 
       <section>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>Ingresos fijos</h3>
-          <button onClick={() => setModalFijo(true)}
-            className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer transition-all duration-200 active:scale-95 px-3 py-1.5 rounded-xl"
-            style={{ color: 'var(--color-accent)', background: 'var(--color-accent-glow)' }}>
-            <Plus size={14} /> Agregar
-          </button>
-        </div>
+        <EncabezadoSeccion titulo="Ingresos fijos">
+          <BotonAgregar onClick={() => setModalFijo(true)} />
+        </EncabezadoSeccion>
         {data.ingresosFijos.length === 0 ? (
-          <div className="rounded-2xl border p-5 text-center" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-            <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Sin ingresos fijos cargados</p>
-          </div>
+          <EstadoVacio>Sin ingresos fijos cargados</EstadoVacio>
         ) : (
-          <div className="rounded-2xl border overflow-hidden animate-fade-in-up [&>*+*]:border-t [&>*+*]:border-[var(--color-border-subtle)]"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+          <ListaCard>
             {data.ingresosFijos.map((ing) => (
               <FilaMovimiento key={ing.id} onClick={() => setEditFijo(ing)}
                 icono={<IconoMovimiento tipo="sueldo" />}
@@ -115,33 +86,28 @@ function Ingresos() {
                 monto={<>+<AnimatedNumber value={ing.monto} /></>}
                 color="var(--color-positive)" />
             ))}
-          </div>
+          </ListaCard>
         )}
       </section>
 
       <section>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold tracking-tight" style={{ color: 'var(--color-text)' }}>Ingresos variables</h3>
-          <button onClick={() => setModalEfimero(true)}
-            className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer transition-all duration-200 active:scale-95 px-3 py-1.5 rounded-xl"
-            style={{ color: 'var(--color-accent)', background: 'var(--color-accent-glow)' }}>
-            <Plus size={14} /> Agregar
-          </button>
-        </div>
+        <EncabezadoSeccion titulo="Ingresos variables">
+          <BotonAgregar onClick={() => setModalEfimero(true)} />
+        </EncabezadoSeccion>
         {data.ingresosEfimeros.length === 0 ? (
-          <div className="rounded-2xl border p-5 text-center" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-            <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Sin ingresos este mes</p>
-          </div>
+          <EstadoVacio>Sin ingresos este mes</EstadoVacio>
         ) : (
           <div className="space-y-4">
             {agruparPorFecha(data.ingresosEfimeros).map((grupo, gi) => (
               <GrupoFecha key={grupo.fecha} etiqueta={grupo.etiqueta} total={grupo.total} delay={gi * 0.05}>
                 {grupo.items.map((ing) => (
-                  <FilaMovimiento key={ing.id} onClick={() => setEditEfimero(ing)}
-                    icono={<IconoMovimiento tipo="ingreso" />}
-                    titulo={ing.nombre}
-                    monto={<>+<AnimatedNumber value={ing.monto} /></>}
-                    color="var(--color-positive)" />
+                  <SwipeToDelete key={ing.id} rounded={false} onDelete={() => eliminarIngreso(ing)}>
+                    <FilaMovimiento onClick={() => setEditEfimero(ing)}
+                      icono={<IconoMovimiento tipo="ingreso" />}
+                      titulo={ing.nombre}
+                      monto={<>+<AnimatedNumber value={ing.monto} /></>}
+                      color="var(--color-positive)" />
+                  </SwipeToDelete>
                 ))}
               </GrupoFecha>
             ))}
