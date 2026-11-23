@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, ArrowDownRight, Wallet, Pencil, AlertTriangle } from 'lucide-react'
+import { Plus, ArrowDownRight, ArrowUpRight, Wallet, Pencil, AlertTriangle, Eye, EyeOff } from 'lucide-react'
 import db from '../db/index.js'
 import { obtenerCotizacionBlue, convertirARS } from '../db/moneda.js'
 import IngresoFijoModal from '../components/IngresoFijoModal.jsx'
@@ -21,6 +21,17 @@ function Plantilla() {
   const [modalEfimero, setModalEfimero] = useState(false)
   const [editFijo, setEditFijo] = useState(null)
   const [editEfimero, setEditEfimero] = useState(null)
+  const [oculto, setOculto] = useState(() => {
+    try { return localStorage.getItem('ocultarMontos') === '1' } catch { return false }
+  })
+
+  const toggleOculto = () => {
+    setOculto((prev) => {
+      const next = !prev
+      try { localStorage.setItem('ocultarMontos', next ? '1' : '0') } catch { /* sin storage */ }
+      return next
+    })
+  }
 
   const cargar = useCallback(async () => {
     try {
@@ -61,6 +72,7 @@ function Plantilla() {
   const totalGastosMes = data.gastadoMes + totalGastosFijos
   const porcentajeGastado = totalIngresos > 0 ? Math.min((data.gastadoMes / totalIngresos) * 100, 100) : 0
   const porcentajeFijos = data.totalSueldos > 0 ? Math.min((totalGastosMes / data.totalSueldos) * 100, 100) : 0
+  const enNegativo = data.totalEnMano < 0
   const alertaPresupuesto = totalIngresos > 0 && data.gastadoMes > totalIngresos * 0.8
 
   if (loading) {
@@ -70,10 +82,7 @@ function Plantilla() {
           <div className="h-7 w-28 mx-auto rounded-lg" style={{ background: 'linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-border) 50%, var(--color-bg-secondary) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s ease-in-out infinite' }} />
           <div className="h-4 w-36 mx-auto rounded-lg" style={{ background: 'linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-border) 50%, var(--color-bg-secondary) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s ease-in-out infinite' }} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <SkeletonCard lines={[50, 30]} />
-          <SkeletonCard lines={[40, 35]} />
-        </div>
+        <div className="h-48 rounded-3xl" style={{ background: 'linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-border) 50%, var(--color-bg-secondary) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s ease-in-out infinite' }} />
         <SkeletonCard lines={[70, 40]} />
         <SkeletonCard lines={[60, 35]} />
       </div>
@@ -87,25 +96,57 @@ function Plantilla() {
         <p className="text-sm mt-1 font-medium" style={{ color: 'var(--color-text-secondary)' }}>{mesActual}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        {[
-          { label: 'Gastado x mes', value: data.gastadoMes, color: 'var(--color-negative)', bg: 'var(--color-negative-light)', icon: ArrowDownRight },
-          { label: 'Total', value: data.totalEnMano, color: 'var(--color-accent)', bg: 'var(--color-accent-light)', icon: Wallet },
-        ].map((card, i) => {
-          const Icon = card.icon
-          return (
-            <div key={card.label} className="rounded-2xl p-3.5 border animate-fade-in-up animate-scale-in transition-all duration-200 hover:-translate-y-0.5"
-              style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', animationDelay: `${i * 0.08}s` }}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>{card.label}</span>
-                <div className="flex items-center justify-center w-6 h-6 rounded-lg" style={{ background: card.bg }}>
-                  <Icon size={12} style={{ color: card.color }} />
-                </div>
-              </div>
-              <p className="text-base font-bold tracking-tight" style={{ color: card.color }}><AnimatedNumber value={card.value} /></p>
+      <div className="relative overflow-hidden rounded-3xl p-5 animate-scale-in"
+        style={{
+          background: enNegativo
+            ? 'linear-gradient(135deg, var(--color-negative) 0%, color-mix(in srgb, var(--color-negative) 70%, #000) 100%)'
+            : 'linear-gradient(135deg, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 65%, #7c2d12) 100%)',
+          boxShadow: `0 12px 32px -12px ${enNegativo ? 'color-mix(in srgb, var(--color-negative) 60%, transparent)' : 'var(--color-accent-glow)'}`,
+          color: '#fff',
+        }}>
+        <div className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full" style={{ background: 'rgba(255,255,255,0.10)' }} />
+        <div className="pointer-events-none absolute -bottom-20 -left-10 w-40 h-40 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl" style={{ background: 'rgba(255,255,255,0.18)' }}>
+              <Wallet size={16} />
             </div>
-          )
-        })}
+            <span className="text-xs font-semibold uppercase tracking-wider" style={{ opacity: 0.9 }}>Total en mano</span>
+          </div>
+          <button onClick={toggleOculto} aria-label={oculto ? 'Mostrar montos' : 'Ocultar montos'}
+            className="flex items-center justify-center w-8 h-8 rounded-xl cursor-pointer transition-all duration-200 active:scale-90"
+            style={{ background: 'rgba(255,255,255,0.14)' }}>
+            {oculto ? <EyeOff size={15} /> : <Eye size={15} />}
+          </button>
+        </div>
+
+        <p className="relative mt-4 text-4xl font-extrabold tracking-tight tabular-nums leading-none break-all">
+          {oculto ? '$ •••••' : <AnimatedNumber value={data.totalEnMano} />}
+        </p>
+        <p className="relative mt-2 text-xs font-medium" style={{ opacity: 0.8 }}>
+          {enNegativo ? 'Estás en negativo' : 'Disponible ahora'}
+        </p>
+
+        <div className="relative grid grid-cols-2 gap-2 mt-5">
+          {[
+            { label: 'Ingresos del mes', value: totalIngresos, icon: ArrowUpRight },
+            { label: 'Gastado del mes', value: data.gastadoMes, icon: ArrowDownRight },
+          ].map((item) => {
+            const Icon = item.icon
+            return (
+              <div key={item.label} className="rounded-2xl px-3 py-2.5" style={{ background: 'rgba(255,255,255,0.14)' }}>
+                <div className="flex items-center gap-1.5" style={{ opacity: 0.85 }}>
+                  <Icon size={12} />
+                  <span className="text-[10px] font-semibold uppercase tracking-wider">{item.label}</span>
+                </div>
+                <p className="mt-1 text-sm font-bold tracking-tight tabular-nums">
+                  {oculto ? '$ •••' : <AnimatedNumber value={item.value} />}
+                </p>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {data.totalSueldos > 0 && (
