@@ -84,7 +84,10 @@ async function primerMesConDatos() {
   return validos[0] || mesActualStr()
 }
 
-async function calcularReporte(mes) {
+// Calcula ingresos, gastos y balance de un mes. Es SOLO un cálculo: no toca el
+// total en mano ni los ahorros. Se usa para guardar el reporte de cada mes
+// cerrado y para mostrar el mes en curso en vivo en el Dashboard.
+export async function calcularReporte(mes) {
   const [gastosDiarios, ingresosEfimeros, fijos] = await Promise.all([
     db.gastos_diarios.where('fecha').between(primerDiaMes(mes), finMesExclusivo(mes), true, false).toArray(),
     db.ingresos_efimeros.where('fecha').between(primerDiaMes(mes), finMesExclusivo(mes), true, false).toArray(),
@@ -113,7 +116,6 @@ async function calcularReporte(mes) {
     total_ingresos: totalIngresos,
     total_gastos: totalGastos,
     diferencia,
-    ahorro: diferencia,
     version: 2,
     createdAt: new Date().toISOString(),
   }
