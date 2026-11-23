@@ -4,10 +4,13 @@ import Layout from './components/Layout.jsx'
 import SplashScreen from './components/SplashScreen.jsx'
 import ConfirmacionHost from './components/ConfirmacionHost.jsx'
 import { useCierreMensual } from './hooks/useCierreMensual.js'
+import { observarCambios } from './db/cambios.js'
 
 function App({ dbReady }) {
   const [showSplash, setShowSplash] = useState(true)
   useCierreMensual()
+
+  useEffect(() => observarCambios(), [])
 
   useEffect(() => {
     const theme = localStorage.getItem('theme')

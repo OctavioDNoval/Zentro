@@ -64,6 +64,12 @@ function Ahorros() {
     return () => clearInterval(intervalRef.current)
   }, [cargarAhorros, cargarCotizaciones])
 
+  useEffect(() => {
+    const handler = () => cargarAhorros()
+    window.addEventListener('zentro:data-changed', handler)
+    return () => window.removeEventListener('zentro:data-changed', handler)
+  }, [cargarAhorros])
+
   const totalARS = ahorros
     .filter(a => a.moneda === 'ARS')
     .reduce((s, a) => s + a.monto, 0)
