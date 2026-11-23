@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
-import Plantilla from './pages/Plantilla.jsx'
-import Gastos from './pages/Gastos.jsx'
-import Dashboard from './pages/Dashboard.jsx'
-import Ahorros from './pages/Ahorros.jsx'
-import Ingresos from './pages/Ingresos.jsx'
-import Estadisticas from './pages/Estadisticas.jsx'
 import SplashScreen from './components/SplashScreen.jsx'
 import { useCierreMensual } from './hooks/useCierreMensual.js'
 
@@ -26,14 +20,16 @@ function App({ dbReady }) {
   return (
     <>
       <Routes>
+        {/* Las páginas las dibuja el carrusel de Layout; las rutas solo definen la URL */}
         <Route element={<Layout />}>
-          <Route index element={<Plantilla />} />
-          <Route path="gastos" element={<Gastos />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="ahorros" element={<Ahorros />} />
-          <Route path="ingresos" element={<Ingresos />} />
-          <Route path="estadisticas" element={<Estadisticas />} />
+          <Route index />
+          <Route path="gastos" />
+          <Route path="dashboard" />
+          <Route path="ahorros" />
+          <Route path="ingresos" />
+          <Route path="estadisticas" />
         </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   )
