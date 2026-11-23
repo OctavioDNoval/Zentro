@@ -43,7 +43,7 @@ const pasos = [
     puntos: [
       'Diarios: cargalos con una categoría y se descuentan al instante. Podés buscarlos por nombre o categoría.',
       'Fijos: suscripciones, servicios y cuotas, en pesos o dólares (se convierten al blue).',
-      'Los fijos se descuentan solos al empezar cada mes. Las cuotas avanzan y se terminan solas.',
+      'Los fijos se descuentan solos al empezar cada mes (o al cargarlos, si elegís descontarlos ya). Las cuotas avanzan y se terminan solas.',
     ],
   },
   {

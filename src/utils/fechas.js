@@ -34,3 +34,11 @@ export function agruparPorFecha(items) {
       total: lista.reduce((s, i) => s + (Number(i.monto) || 0), 0),
     }))
 }
+
+// "2026-11-01" → "1/11/2026" sin pasar por UTC (new Date('2026-11-01') es medianoche
+// UTC, que en Argentina todavía es el día anterior)
+export function formatearFecha(fecha) {
+  const [y, m, d] = String(fecha ?? '').split('T')[0].split('-').map(Number)
+  if (!y || !m || !d) return ''
+  return `${d}/${m}/${y}`
+}

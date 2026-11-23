@@ -2,6 +2,7 @@ import db from './index.js'
 import { actualizarTotal } from './estado-cuenta.js'
 import { formatearARSCompacto, formatearMonto } from './moneda.js'
 import { confirmarEliminar } from '../utils/confirmar.js'
+import { snapshotGastoDelMes, borrarGastoFijo } from './gastos-fijos.js'
 
 // Cada función pide confirmación, borra y ajusta el total en mano.
 // Devuelve true si se eliminó. La usan tanto los modales como deslizar para borrar.
@@ -19,9 +20,13 @@ export async function eliminarGastoDiario(gasto) {
 }
 
 export async function eliminarGastoFijo(gasto) {
-  const ok = await confirmarEliminar({ tipo: 'gasto fijo', nombre: gasto.nombre, monto: formatearMonto(gasto.monto, gasto.moneda) })
+  const snapshot = await snapshotGastoDelMes(gasto.id)
+  const ok = await confirmarEliminar({
+    tipo: 'gasto fijo', nombre: gasto.nombre, monto: formatearMonto(gasto.monto, gasto.moneda),
+    detalle: snapshot ? `Como ya se descontó este mes, ${formatearARSCompacto(Math.round(snapshot.monto_ars))} vuelven a tu total en mano.` : undefined,
+  })
   if (!ok) return false
-  await db.gastos_fijos.delete(gasto.id)
+  await borrarGastoFijo(gasto)
   return true
 }
 

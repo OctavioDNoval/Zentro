@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { Plus, AlertCircle } from 'lucide-react'
-import db from '../db/index.js'
+import { crearGastoFijo } from '../db/gastos-fijos.js'
 import { esMontoValido, parseMonto } from '../db/moneda.js'
 import Modal from './Modal.jsx'
 import MontoInput from './MontoInput.jsx'
@@ -11,6 +11,7 @@ function GastoFijoModal({ isOpen, onClose, onSaved }) {
   const [moneda, setMoneda] = useState('ARS')
   const [tipo, setTipo] = useState('suscripcion')
   const [totalCuotas, setTotalCuotas] = useState('')
+  const [descontarAhora, setDescontarAhora] = useState(false)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const savingRef = useRef(false)
@@ -21,6 +22,7 @@ function GastoFijoModal({ isOpen, onClose, onSaved }) {
     setMoneda('ARS')
     setTipo('suscripcion')
     setTotalCuotas('')
+    setDescontarAhora(false)
     setError('')
     setSaving(false)
     savingRef.current = false
@@ -52,11 +54,9 @@ function GastoFijoModal({ isOpen, onClose, onSaved }) {
 
     setError('')
     try {
-      const data = { nombre: nombreLimpiado, monto: parseMonto(monto), moneda, tipo, activo: 1, createdAt: new Date().toISOString() }
-      if (tipo === 'cuotas') { data.total_cuotas = cuotas; data.cuotas_pagadas = 0 }
       setSaving(true)
       savingRef.current = true
-      await db.gastos_fijos.add(data)
+      await crearGastoFijo({ nombre: nombreLimpiado, monto: parseMonto(monto), moneda, tipo, totalCuotas: cuotas }, descontarAhora)
       await onSaved?.()
       handleClose()
     } catch (err) {
@@ -111,6 +111,12 @@ function GastoFijoModal({ isOpen, onClose, onSaved }) {
               style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)', opacity: saving ? 0.6 : 1 }} />
           </div>
         )}
+        <label className="flex items-center gap-2.5 text-xs cursor-pointer py-1" style={{ color: 'var(--color-text-secondary)' }}>
+          <input type="checkbox" checked={descontarAhora} onChange={(e) => setDescontarAhora(e.target.checked)}
+            disabled={saving}
+            className="w-4 h-4 rounded cursor-pointer accent-[var(--color-accent)]" />
+          Descontar del total ahora — si no, se descuenta el 1 del próximo mes
+        </label>
         {error && (
           <div className="flex items-center gap-2 text-xs rounded-xl px-4 py-2.5" style={{ background: 'var(--color-negative-light)', color: 'var(--color-negative)' }}>
             <AlertCircle size={14} /> {error}

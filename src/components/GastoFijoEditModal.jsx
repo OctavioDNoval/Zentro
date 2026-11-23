@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Trash2, AlertCircle } from 'lucide-react'
-import db from '../db/index.js'
+import { actualizarGastoFijo, snapshotGastoDelMes } from '../db/gastos-fijos.js'
 import Modal from './Modal.jsx'
 import MontoInput from './MontoInput.jsx'
 import { esMontoValido, parseMonto, formatearMontoInput } from '../db/moneda.js'
@@ -15,6 +15,15 @@ function GastoFijoEditModal({ isOpen, onClose, gasto, onSaved }) {
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const savingRef = useRef(false)
+
+  const [yaDescontado, setYaDescontado] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen || !gasto) return
+    let cancelado = false
+    snapshotGastoDelMes(gasto.id).then((s) => { if (!cancelado) setYaDescontado(!!s) })
+    return () => { cancelado = true }
+  }, [isOpen, gasto])
 
   useEffect(() => {
     if (isOpen && gasto) {
@@ -58,17 +67,9 @@ function GastoFijoEditModal({ isOpen, onClose, gasto, onSaved }) {
 
     setError('')
     try {
-      const data = { nombre: nombreLimpiado, monto: parseMonto(monto), moneda, tipo }
-      if (tipo === 'cuotas') {
-        data.total_cuotas = cuotas
-        data.cuotas_pagadas = Number(gasto.cuotas_pagadas) || 0
-      } else {
-        data.total_cuotas = null
-        data.cuotas_pagadas = 0
-      }
       setSaving(true)
       savingRef.current = true
-      await db.gastos_fijos.update(gasto.id, data)
+      await actualizarGastoFijo(gasto, { nombre: nombreLimpiado, monto: parseMonto(monto), moneda, tipo, totalCuotas: cuotas })
       await onSaved?.()
       onClose()
     } catch (err) {
@@ -143,6 +144,16 @@ function GastoFijoEditModal({ isOpen, onClose, gasto, onSaved }) {
               className={inputClass}
               style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)', opacity: saving ? 0.6 : 1 }} />
           </div>
+        )}
+        {yaDescontado && (
+          <p className="text-[11px] px-1" style={{ color: 'var(--color-text-tertiary)' }}>
+            Ya se descontó este mes: si cambiás el monto, la diferencia se ajusta en tu total en mano.
+          </p>
+        )}
+        {tipo === 'cuotas' && Number(totalCuotas) > 0 && Number(totalCuotas) <= (Number(gasto.cuotas_pagadas) || 0) && (
+          <p className="text-[11px] px-1" style={{ color: 'var(--color-text-tertiary)' }}>
+            Con {gasto.cuotas_pagadas} cuotas pagadas queda terminado y deja de descontarse.
+          </p>
         )}
         {error && (
           <div className="flex items-center gap-2 text-xs rounded-xl px-4 py-2.5" style={{ background: 'var(--color-negative-light)', color: 'var(--color-negative)' }}>

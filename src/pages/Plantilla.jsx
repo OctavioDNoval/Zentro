@@ -1,15 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { ArrowDownRight, ArrowUpRight, Wallet, AlertTriangle, Eye, EyeOff } from 'lucide-react'
 import db from '../db/index.js'
-import { obtenerCotizacionBlue, convertirARS } from '../db/moneda.js'
+import { calcularReporte } from '../db/ciclo-mensual.js'
 import AnimatedNumber from '../components/AnimatedNumber.jsx'
 import { SkeletonCard } from '../components/Skeleton.jsx'
 
 const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
 function Plantilla() {
-  const [data, setData] = useState({ ingresosFijos: [], ingresosEfimeros: [], gastadoMes: 0, totalEnMano: 0, gastosFijos: [] })
-  const [cotizacion, setCotizacion] = useState(null)
+  const [data, setData] = useState({ totalEnMano: 0, ingresosMes: 0, gastosMes: 0 })
   const [loading, setLoading] = useState(true)
   const [oculto, setOculto] = useState(() => {
     try { return localStorage.getItem('ocultarMontos') === '1' } catch { return false }
@@ -25,22 +24,14 @@ function Plantilla() {
 
   const cargar = useCallback(async () => {
     try {
-      const hoy = new Date()
-      const m = hoy.getMonth(); const y = hoy.getFullYear()
-      const inicioStr = `${y}-${String(m + 1).padStart(2, '0')}-01`
-      const finStr = m === 11 ? `${y + 1}-01-01` : `${y}-${String(m + 2).padStart(2, '0')}-01`
-      const [ingresosFijos, ingresosEfimeros, gastosDiarios, gastosFijos, estado, cot] = await Promise.all([
-        db.ingresos_fijos.where('activo').equals(1).toArray(),
-        db.ingresos_efimeros.where('fecha').between(inicioStr, finStr, true, false).toArray(),
-        db.gastos_diarios.where('fecha').between(inicioStr, finStr, true, false).toArray(),
-        db.gastos_fijos.where('activo').equals(1).toArray(),
-        db.estado_cuenta.get(1),
-        obtenerCotizacionBlue(),
-      ])
-      const gastadoMes = gastosDiarios.reduce((s, g) => s + g.monto, 0)
-      const totalSueldos = ingresosFijos.reduce((s, i) => s + i.monto, 0)
-      setCotizacion(cot)
-      setData({ ingresosFijos, ingresosEfimeros, gastadoMes, restanteMes: totalSueldos - gastadoMes, totalEnMano: estado?.total_en_mano ?? 0, totalSueldos, gastosFijos })
+      const mes = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
+      // Los números del mes salen del mismo cálculo que usa el Dashboard
+      const [estado, reporte] = await Promise.all([db.estado_cuenta.get(1), calcularReporte(mes)])
+      setData({
+        totalEnMano: estado?.total_en_mano ?? 0,
+        ingresosMes: reporte.total_ingresos,
+        gastosMes: reporte.total_gastos,
+      })
     } catch (err) {
       console.error('Error cargando datos:', err)
     } finally {
@@ -57,13 +48,9 @@ function Plantilla() {
   }, [cargar])
 
   const mesActual = `${meses[new Date().getMonth()]} ${new Date().getFullYear()}`
-  const totalGastosFijos = data.gastosFijos.reduce((s, g) => s + convertirARS(g.monto, g.moneda, cotizacion), 0)
-  const totalIngresos = data.totalSueldos + data.ingresosEfimeros.reduce((s, i) => s + i.monto, 0)
-  const totalGastosMes = data.gastadoMes + totalGastosFijos
-  const porcentajeGastado = totalIngresos > 0 ? Math.min((data.gastadoMes / totalIngresos) * 100, 100) : 0
-  const porcentajeFijos = data.totalSueldos > 0 ? Math.min((totalGastosMes / data.totalSueldos) * 100, 100) : 0
+  const porcentajeGastado = data.ingresosMes > 0 ? Math.min((data.gastosMes / data.ingresosMes) * 100, 100) : 0
   const enNegativo = data.totalEnMano < 0
-  const alertaPresupuesto = totalIngresos > 0 && data.gastadoMes > totalIngresos * 0.8
+  const alertaPresupuesto = data.ingresosMes > 0 && data.gastosMes > data.ingresosMes * 0.8
 
   if (loading) {
     return (
@@ -120,8 +107,8 @@ function Plantilla() {
 
         <div className="relative grid grid-cols-2 gap-2 mt-5">
           {[
-            { label: 'Ingresos del mes', value: totalIngresos, icon: ArrowUpRight },
-            { label: 'Gastado del mes', value: data.gastadoMes, icon: ArrowDownRight },
+            { label: 'Ingresos del mes', value: data.ingresosMes, icon: ArrowUpRight },
+            { label: 'Gastos del mes', value: data.gastosMes, icon: ArrowDownRight },
           ].map((item) => {
             const Icon = item.icon
             return (
@@ -139,23 +126,23 @@ function Plantilla() {
         </div>
       </div>
 
-      {data.totalSueldos > 0 && (
+      {data.ingresosMes > 0 && (
         <div className="rounded-2xl p-4 border animate-fade-in-up" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', animationDelay: '0.16s' }}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Gastos del mes</span>
-            <span className="text-xs font-bold" style={{ color: 'var(--color-negative)' }}>{Math.round(porcentajeFijos)}%</span>
+            <span className="text-xs font-bold" style={{ color: 'var(--color-negative)' }}>{Math.round(porcentajeGastado)}%</span>
           </div>
           <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-bg-secondary)' }}>
             <div className="h-full rounded-full transition-all duration-700 ease-out"
               style={{
-                width: `${porcentajeFijos}%`,
-                background: porcentajeFijos > 80 ? 'var(--color-negative)' : porcentajeFijos > 50 ? '#f59e0b' : 'var(--color-accent)',
+                width: `${porcentajeGastado}%`,
+                background: porcentajeGastado > 80 ? 'var(--color-negative)' : porcentajeGastado > 50 ? '#f59e0b' : 'var(--color-accent)',
               }}
             />
           </div>
           <div className="flex items-center justify-between mt-2">
-            <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}><AnimatedNumber value={totalGastosMes} /> / <AnimatedNumber value={data.totalSueldos} /></span>
-            <span className="text-[10px] font-medium" style={{ color: 'var(--color-text-tertiary)' }}>gastos vs ingresos fijos</span>
+            <span className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}><AnimatedNumber value={data.gastosMes} /> / <AnimatedNumber value={data.ingresosMes} /></span>
+            <span className="text-[10px] font-medium" style={{ color: 'var(--color-text-tertiary)' }}>gastos vs ingresos del mes</span>
           </div>
         </div>
       )}

@@ -283,11 +283,23 @@ async function aplicarFijosDelMes() {
     })
   }
 
+  const yaDescontados = new Set(
+    (await db.movimientos_fijos_mensuales.where('mes').equals(mes).toArray())
+      .filter((m) => m.tipo === 'gasto')
+      .map((m) => m.referenciaId),
+  )
+
   for (const gasto of gastos) {
     const pagadas = numero(gasto.cuotas_pagadas)
     const totalCuotas = numero(gasto.total_cuotas)
 
-    if (gasto.tipo === 'cuotas' && pagadas >= totalCuotas) continue
+    // Cuotas ya completas que quedaron activas: se dan por terminadas
+    if (gasto.tipo === 'cuotas' && pagadas >= totalCuotas) {
+      gastosActualizar.push({ id: gasto.id, activo: 0 })
+      continue
+    }
+    // Cargado con "descontar ahora" en este mismo mes
+    if (yaDescontados.has(gasto.id)) continue
 
     const monto = numero(gasto.monto)
     if (monto <= 0) continue
