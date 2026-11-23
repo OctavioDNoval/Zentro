@@ -6,6 +6,8 @@ import AnimatedNumber from '../components/AnimatedNumber.jsx'
 import AhorroModal from '../components/AhorroModal.jsx'
 import AhorroEditModal from '../components/AhorroEditModal.jsx'
 import { SkeletonCard } from '../components/Skeleton.jsx'
+import SwipeToDelete from '../components/SwipeToDelete.jsx'
+import { eliminarAhorro } from '../db/eliminar.js'
 
 const NOMBRES_CASA = { blue: 'Blue', oficial: 'Oficial', mep: 'MEP', ccl: 'CCL' }
 const COLORES_CASA = {
@@ -181,8 +183,9 @@ function Ahorros() {
         ) : (
           <div className="space-y-2">
             {ahorros.map((a, i) => (
-              <div key={a.id} className="card-base rounded-2xl px-4 py-3 flex justify-between items-center animate-fade-in-up cursor-pointer active:scale-[0.98]"
-                style={{ animationDelay: `${i * 0.05}s` }}
+              <SwipeToDelete key={a.id} onDelete={() => eliminarAhorro(a)}>
+              <div className="card-base rounded-2xl px-4 py-3 flex justify-between items-center animate-fade-in-up cursor-pointer active:scale-[0.98]"
+                style={{ animationDelay: `${i * 0.05}s`, background: 'var(--color-surface)' }}
                 onClick={() => setEditAhorro(a)}>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-8 h-8 rounded-xl" style={{ background: a.moneda === 'ARS' ? 'var(--color-accent-light)' : 'var(--color-positive-light)' }}>
@@ -206,6 +209,7 @@ function Ahorros() {
                   {a.moneda === 'ARS' ? formatARS(a.monto) : formatUSD(a.monto)}
                 </p>
               </div>
+              </SwipeToDelete>
             ))}
           </div>
         )}

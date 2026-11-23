@@ -3,8 +3,8 @@ import { Trash2, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
 import Modal from './Modal.jsx'
 import MontoInput from './MontoInput.jsx'
-import { esMontoValido, parseMonto, formatearMontoInput, formatearARSCompacto } from '../db/moneda.js'
-import { confirmarEliminar } from '../utils/confirmar.js'
+import { esMontoValido, parseMonto, formatearMontoInput } from '../db/moneda.js'
+import { eliminarIngresoFijo } from '../db/eliminar.js'
 
 function IngresoFijoEditModal({ isOpen, onClose, ingreso, onSaved }) {
   const [nombre, setNombre] = useState(ingreso?.nombre || '')
@@ -96,37 +96,14 @@ function IngresoFijoEditModal({ isOpen, onClose, ingreso, onSaved }) {
 
   const handleDelete = async () => {
     if (!ingreso || savingRef.current) return
-    if (!(await confirmarEliminar({ tipo: 'ingreso fijo', nombre: ingreso.nombre, monto: formatearARSCompacto(ingreso.monto), detalle: aplicadoEsteMes ? 'Como ya se cobró este mes, el monto se descuenta de tu total en mano.' : undefined }))) return
     setError('')
+    savingRef.current = true
+    setSaving(true)
     try {
-      const oldMonto = Number.isFinite(Number(ingreso.monto)) ? Number(ingreso.monto) : 0
-      setSaving(true)
-      savingRef.current = true
-      await db.transaction('rw', db.ingresos_fijos, db.movimientos_fijos_mensuales, db.estado_cuenta, async () => {
-        await db.ingresos_fijos.delete(ingreso.id)
-
-        if (!aplicadoEsteMes) return
-
-        if (oldMonto > 0) {
-          const estado = await db.estado_cuenta.get(1)
-          const actual = Number.isFinite(estado?.total_en_mano) ? estado.total_en_mano : 0
-          await db.estado_cuenta.update(1, {
-            total_en_mano: actual - oldMonto,
-            updatedAt: new Date().toISOString(),
-          })
-        }
-
-        const snapshot = await db.movimientos_fijos_mensuales
-          .where('mes').equals(mesActual)
-          .filter((item) => item.tipo === 'ingreso' && item.referenciaId === ingreso.id)
-          .first()
-
-        if (snapshot) {
-          await db.movimientos_fijos_mensuales.delete(snapshot.id)
-        }
-      })
-      await onSaved?.()
-      onClose()
+      if (await eliminarIngresoFijo(ingreso)) {
+        await onSaved?.()
+        onClose()
+      }
     } catch (err) {
       console.error(err)
       setError(err.message || 'Error al eliminar')
