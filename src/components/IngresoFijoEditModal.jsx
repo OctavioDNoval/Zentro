@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react'
 import { Trash2, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
-import { esMontoValido, parseMonto, formatearMontoInput } from '../db/moneda.js'
 import Modal from './Modal.jsx'
 import MontoInput from './MontoInput.jsx'
+import { esMontoValido, parseMonto, formatearMontoInput, formatearARSCompacto } from '../db/moneda.js'
+import { confirmarEliminar } from '../utils/confirmar.js'
 
 function IngresoFijoEditModal({ isOpen, onClose, ingreso, onSaved }) {
   const [nombre, setNombre] = useState(ingreso?.nombre || '')
@@ -95,6 +96,7 @@ function IngresoFijoEditModal({ isOpen, onClose, ingreso, onSaved }) {
 
   const handleDelete = async () => {
     if (!ingreso || savingRef.current) return
+    if (!(await confirmarEliminar({ tipo: 'ingreso fijo', nombre: ingreso.nombre, monto: formatearARSCompacto(ingreso.monto), detalle: aplicadoEsteMes ? 'Como ya se cobró este mes, el monto se descuenta de tu total en mano.' : undefined }))) return
     setError('')
     try {
       const oldMonto = Number.isFinite(Number(ingreso.monto)) ? Number(ingreso.monto) : 0

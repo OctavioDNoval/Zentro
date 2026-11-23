@@ -15,6 +15,7 @@ import GrupoFecha, { FilaMovimiento, Chip } from '../components/GrupoFecha.jsx'
 import IconoMovimiento from '../components/IconoMovimiento.jsx'
 import { estiloTipo } from '../utils/iconos.js'
 import { agruparPorFecha } from '../utils/fechas.js'
+import { confirmarEliminar } from '../utils/confirmar.js'
 
 const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
@@ -63,6 +64,7 @@ function Gastos() {
   const getCat = (id) => data.categorias.find((c) => c.id === id)?.nombre ?? 'Sin categoría'
 
   const eliminarGasto = async (g) => {
+    if (!(await confirmarEliminar({ tipo: 'gasto', nombre: g.concepto, monto: formatearARSCompacto(g.monto), detalle: 'El monto vuelve a tu total en mano.' }))) return
     const monto = Number(g.monto)
     await db.gastos_diarios.delete(g.id)
     if (Number.isFinite(monto) && monto > 0) await actualizarTotal(monto)

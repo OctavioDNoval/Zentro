@@ -3,6 +3,8 @@ import { Trash2, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
 import { actualizarTotal } from '../db/estado-cuenta.js'
 import Modal from './Modal.jsx'
+import { confirmarEliminar } from '../utils/confirmar.js'
+import { formatearARSCompacto } from '../db/moneda.js'
 
 function GastoEditModal({ isOpen, onClose, gasto, onSaved }) {
   const [categoriaId, setCategoriaId] = useState(1)
@@ -41,6 +43,7 @@ function GastoEditModal({ isOpen, onClose, gasto, onSaved }) {
 
   const handleDelete = async () => {
     if (!gasto || savingRef.current) return
+    if (!(await confirmarEliminar({ tipo: 'gasto', nombre: gasto.concepto, monto: formatearARSCompacto(gasto.monto), detalle: 'El monto vuelve a tu total en mano.' }))) return
     setError('')
     try {
       const monto = Number(gasto.monto)

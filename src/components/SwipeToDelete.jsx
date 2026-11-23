@@ -25,9 +25,8 @@ function SwipeToDelete({ children, onDelete, threshold = 80, rounded = true }) {
     setSwiping(false)
     if (offset >= threshold) {
       setOffset(100)
-      setTimeout(() => {
-        onDelete?.()
-        setOffset(0)
+      setTimeout(async () => {
+        try { await onDelete?.() } finally { setOffset(0) }
       }, 200)
     } else {
       setOffset(0)

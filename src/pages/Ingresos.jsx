@@ -12,6 +12,8 @@ import { actualizarTotal } from '../db/estado-cuenta.js'
 import GrupoFecha, { FilaMovimiento, Chip } from '../components/GrupoFecha.jsx'
 import IconoMovimiento from '../components/IconoMovimiento.jsx'
 import { agruparPorFecha } from '../utils/fechas.js'
+import { confirmarEliminar } from '../utils/confirmar.js'
+import { formatearARSCompacto } from '../db/moneda.js'
 
 const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
@@ -50,6 +52,7 @@ function Ingresos() {
   }, [cargar])
 
   const eliminarIngreso = async (ing) => {
+    if (!(await confirmarEliminar({ tipo: 'ingreso', nombre: ing.nombre, monto: formatearARSCompacto(ing.monto), detalle: 'El monto se descuenta de tu total en mano.' }))) return
     const monto = Number(ing.monto)
     await db.ingresos_efimeros.delete(ing.id)
     if (Number.isFinite(monto) && monto > 0) await actualizarTotal(-monto)
