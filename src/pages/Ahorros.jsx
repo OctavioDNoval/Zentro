@@ -12,6 +12,7 @@ import SwipeToDelete from '../components/SwipeToDelete.jsx'
 import { eliminarAhorro } from '../db/eliminar.js'
 
 const NOMBRES_CASA = { blue: 'Blue', oficial: 'Oficial', mep: 'MEP', ccl: 'CCL' }
+const COLOR_CASA = { blue: '#3b82f6', oficial: '#16a34a', mep: '#8b5cf6', ccl: '#ea580c' }
 
 function formatearUltimaActualizacion(fechaStr) {
   if (!fechaStr) return null
@@ -120,14 +121,15 @@ function Ahorros() {
           <div className="grid grid-cols-4 gap-2">
             {CASAS.map((casa) => {
               const c = cotizaciones.find((x) => x.casa === casa)
-              const esBlue = casa === 'blue'
+              const color = COLOR_CASA[casa]
               return (
                 <div key={casa} className="rounded-xl py-2.5 px-1 text-center"
                   style={{
-                    background: esBlue ? 'var(--color-accent-light)' : 'var(--color-bg-secondary)',
-                    boxShadow: esBlue ? 'inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent)' : 'none',
+                    background: `color-mix(in srgb, ${color} 14%, transparent)`,
+                    // El blue se usa para convertir: lleva un borde para destacarlo
+                    boxShadow: casa === 'blue' ? `inset 0 0 0 1.5px color-mix(in srgb, ${color} 55%, transparent)` : 'none',
                   }}>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: esBlue ? 'var(--color-accent)' : 'var(--color-text-tertiary)' }}>{NOMBRES_CASA[casa]}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color }}>{NOMBRES_CASA[casa]}</p>
                   <p className="text-sm font-bold tabular-nums mt-0.5" style={{ color: 'var(--color-text)' }}>
                     {c ? '$' + Math.round(Number(c.venta)).toLocaleString('es-AR') : '–'}
                   </p>
