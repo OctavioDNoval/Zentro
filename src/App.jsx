@@ -5,6 +5,8 @@ import Plantilla from './pages/Plantilla.jsx'
 import Gastos from './pages/Gastos.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Ahorros from './pages/Ahorros.jsx'
+import Ingresos from './pages/Ingresos.jsx'
+import Estadisticas from './pages/Estadisticas.jsx'
 import SplashScreen from './components/SplashScreen.jsx'
 import { useCierreMensual } from './hooks/useCierreMensual.js'
 
@@ -29,6 +31,8 @@ function App({ dbReady }) {
           <Route path="gastos" element={<Gastos />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="ahorros" element={<Ahorros />} />
+          <Route path="ingresos" element={<Ingresos />} />
+          <Route path="estadisticas" element={<Estadisticas />} />
         </Route>
       </Routes>
     </>
