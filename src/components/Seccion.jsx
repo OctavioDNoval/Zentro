@@ -14,7 +14,7 @@ export function EncabezadoPagina({ titulo, subtitulo }) {
 }
 
 // Tarjeta de resumen: total grande + desglose en dos recuadros
-export function ResumenMes({ titulo, total, color, colorSuave, icon: Icon, items }) {
+export function ResumenMes({ titulo, total, color, colorSuave, icon: Icon, items, format, nota, children }) {
   return (
     <div className="rounded-2xl p-4 border animate-scale-in" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
       <div className="flex items-center justify-between">
@@ -24,16 +24,18 @@ export function ResumenMes({ titulo, total, color, colorSuave, icon: Icon, items
         </div>
       </div>
       <p className="mt-1 text-3xl font-extrabold tracking-tight tabular-nums" style={{ color }}>
-        <AnimatedNumber value={total} />
+        <AnimatedNumber value={total} format={format} />
       </p>
+      {nota && <p className="mt-1 text-xs font-medium tabular-nums" style={{ color: 'var(--color-text-secondary)' }}>{nota}</p>}
       <div className="grid grid-cols-2 gap-2 mt-3">
         {items.map((item) => (
           <div key={item.label} className="rounded-xl px-3 py-2" style={{ background: 'var(--color-bg-secondary)' }}>
             <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>{item.label}</p>
-            <p className="text-sm font-bold tabular-nums" style={{ color: 'var(--color-text)' }}><AnimatedNumber value={item.value} /></p>
+            <p className="text-sm font-bold tabular-nums" style={{ color: 'var(--color-text)' }}><AnimatedNumber value={item.value} format={item.format} /></p>
           </div>
         ))}
       </div>
+      {children}
     </div>
   )
 }

@@ -102,7 +102,7 @@ export function formatearARSCompacto(n) {
 }
 
 export function formatearUSD(n) {
-  return 'USD ' + (n ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return 'USD ' + (Number(n) || 0).toLocaleString('es-AR', { maximumFractionDigits: 2 })
 }
 
 export function formatearMonto(n, moneda) {
