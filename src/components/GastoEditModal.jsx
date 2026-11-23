@@ -3,6 +3,7 @@ import { Trash2, AlertCircle } from 'lucide-react'
 import db from '../db/index.js'
 import Modal from './Modal.jsx'
 import { eliminarGastoDiario } from '../db/eliminar.js'
+import { formatearFecha } from '../utils/fechas.js'
 
 function GastoEditModal({ isOpen, onClose, gasto, onSaved }) {
   const [categoriaId, setCategoriaId] = useState(1)
@@ -70,7 +71,7 @@ function GastoEditModal({ isOpen, onClose, gasto, onSaved }) {
           <span className="text-sm font-bold" style={{ color: 'var(--color-negative)' }}>${gasto.monto.toLocaleString('es-AR')}</span>
         </div>
         <div className="text-xs px-1" style={{ color: 'var(--color-text-tertiary)' }}>
-          {new Date(gasto.fecha).toLocaleDateString('es-AR')}
+          {formatearFecha(gasto.fecha)}
         </div>
         <select value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)}
           className={inputClass}

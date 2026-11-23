@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Tag, Search, X, TrendingDown } from 'lucide-react'
 import db from '../db/index.js'
-import { obtenerCotizacionBlue, convertirARS, formatearMonto, formatearARSCompacto } from '../db/moneda.js'
+import { formatearMonto, formatearARSCompacto } from '../db/moneda.js'
+import { calcularReporte } from '../db/ciclo-mensual.js'
 import GastoDiarioModal from '../components/GastoDiarioModal.jsx'
 import GastoFijoModal from '../components/GastoFijoModal.jsx'
 import GastoEditModal from '../components/GastoEditModal.jsx'
@@ -21,8 +22,7 @@ const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto'
 const etiquetaTipo = { suscripcion: 'Suscripción', servicio: 'Servicio', cuotas: 'Cuotas' }
 
 function Gastos() {
-  const [data, setData] = useState({ gastosDiarios: [], gastosFijos: [], categorias: [] })
-  const [cotizacion, setCotizacion] = useState(null)
+  const [data, setData] = useState({ gastosDiarios: [], gastosFijos: [], categorias: [], descontados: new Set() })
   const [loading, setLoading] = useState(true)
   const [busqueda, setBusqueda] = useState('')
   const [modalDiario, setModalDiario] = useState(false)
@@ -37,14 +37,16 @@ function Gastos() {
       const m = hoy.getMonth(); const y = hoy.getFullYear()
       const inicioStr = `${y}-${String(m + 1).padStart(2, '0')}-01`
       const finStr = m === 11 ? `${y + 1}-01-01` : `${y}-${String(m + 2).padStart(2, '0')}-01`
-      const [gastosDiarios, gastosFijos, categorias, cot] = await Promise.all([
+      const mes = inicioStr.slice(0, 7)
+      const [gastosDiarios, gastosFijos, categorias, movimientosMes, reporte] = await Promise.all([
         db.gastos_diarios.where('fecha').between(inicioStr, finStr, true, false).reverse().toArray(),
         db.gastos_fijos.where('activo').equals(1).toArray(),
         db.categorias.toArray(),
-        obtenerCotizacionBlue(),
+        db.movimientos_fijos_mensuales.where('mes').equals(mes).toArray(),
+        calcularReporte(mes),
       ])
-      setData({ gastosDiarios, gastosFijos, categorias })
-      setCotizacion(cot)
+      const descontados = new Set(movimientosMes.filter((m) => m.tipo === 'gasto').map((m) => m.referenciaId))
+      setData({ gastosDiarios, gastosFijos, categorias, descontados, totalFijos: reporte.total_gastos_fijos, totalDiarios: reporte.total_gastos_diarios })
     } catch (err) {
       console.error('Error cargando gastos:', err)
     } finally {
@@ -72,9 +74,10 @@ function Gastos() {
 
   const totalFiltrado = gastosFiltrados.reduce((s, g) => s + g.monto, 0)
 
-  const totalGastosFijosARS = data.gastosFijos.reduce((s, g) => s + convertirARS(g.monto, g.moneda, cotizacion), 0)
+  // Mismo cálculo que el Dashboard: solo cuenta los fijos que ya se descontaron este mes
+  const totalGastosFijosARS = data.totalFijos ?? 0
 
-  const totalDiarios = data.gastosDiarios.reduce((s, g) => s + g.monto, 0)
+  const totalDiarios = data.totalDiarios ?? 0
   const mesActual = `${meses[new Date().getMonth()]} ${new Date().getFullYear()}`
 
   if (loading) return <SkeletonPagina />
@@ -105,6 +108,7 @@ function Gastos() {
                   subtitulo={
                     <div className="flex items-center gap-1.5">
                       <Chip color={color}>{etiquetaTipo[g.tipo] ?? 'Fijo'}</Chip>
+                      {!data.descontados.has(g.id) && <Chip>Pendiente</Chip>}
                       {g.moneda === 'USD' && <Chip>USD</Chip>}
                     </div>
                   }

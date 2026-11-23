@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { TrendingUp } from 'lucide-react'
 import db from '../db/index.js'
+import { calcularReporte } from '../db/ciclo-mensual.js'
 import IngresoFijoModal from '../components/IngresoFijoModal.jsx'
 import IngresoEfimeroModal from '../components/IngresoEfimeroModal.jsx'
 import IngresoFijoEditModal from '../components/IngresoFijoEditModal.jsx'
@@ -29,11 +30,13 @@ function Ingresos() {
       const m = hoy.getMonth(); const y = hoy.getFullYear()
       const inicioStr = `${y}-${String(m + 1).padStart(2, '0')}-01`
       const finStr = m === 11 ? `${y + 1}-01-01` : `${y}-${String(m + 2).padStart(2, '0')}-01`
-      const [ingresosFijos, ingresosEfimeros] = await Promise.all([
+      const mes = inicioStr.slice(0, 7)
+      const [ingresosFijos, ingresosEfimeros, reporte] = await Promise.all([
         db.ingresos_fijos.where('activo').equals(1).toArray(),
         db.ingresos_efimeros.where('fecha').between(inicioStr, finStr, true, false).reverse().toArray(),
+        calcularReporte(mes),
       ])
-      setData({ ingresosFijos, ingresosEfimeros })
+      setData({ ingresosFijos, ingresosEfimeros, mes, totalFijos: reporte.total_ingresos_fijos, totalVariables: reporte.total_ingresos_efimeros })
     } catch (err) {
       console.error('Error cargando ingresos:', err)
     } finally {
@@ -51,8 +54,9 @@ function Ingresos() {
 
 
   const mesActual = `${meses[new Date().getMonth()]} ${new Date().getFullYear()}`
-  const totalFijos = data.ingresosFijos.reduce((s, i) => s + i.monto, 0)
-  const totalEfimeros = data.ingresosEfimeros.reduce((s, i) => s + i.monto, 0)
+  // Mismo cálculo que el Dashboard: solo cuenta los fijos que ya se sumaron este mes
+  const totalFijos = data.totalFijos ?? 0
+  const totalEfimeros = data.totalVariables ?? 0
 
   if (loading) return <SkeletonPagina />
 
@@ -77,7 +81,12 @@ function Ingresos() {
                 <FilaMovimiento onClick={() => setEditFijo(ing)}
                   icono={<IconoMovimiento tipo="sueldo" />}
                   titulo={ing.nombre}
-                  subtitulo={<Chip color="#16a34a">Cobra el día {ing.dia_cobro}</Chip>}
+                  subtitulo={
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Chip color="#16a34a">Cobra el día {ing.dia_cobro}</Chip>
+                      {ing.mes_aplicado !== data.mes && <Chip>Pendiente: se suma el 1° del mes que viene</Chip>}
+                    </div>
+                  }
                   monto={<>+<AnimatedNumber value={ing.monto} /></>}
                   color="var(--color-positive)" />
               </SwipeToDelete>
