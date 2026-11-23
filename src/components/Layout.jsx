@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Wallet, CreditCard, BarChart3, Coins, Settings, Plus, Info } from 'lucide-react'
+import { Wallet, CreditCard, BarChart3, Coins, Settings, Plus, Info, PieChart, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 import InstallPWA from './InstallPWA.jsx'
 import InstallModal from './InstallModal.jsx'
@@ -8,10 +8,12 @@ import SettingsModal from './SettingsModal.jsx'
 import GastoDiarioModal from './GastoDiarioModal.jsx'
 
 const tabs = [
+  { path: '/estadisticas', label: 'Estadísticas', icon: PieChart },
   { path: '/', label: 'Plantilla', icon: Wallet },
   { path: '/gastos', label: 'Gastos', icon: CreditCard },
   { path: '/ahorros', label: 'Ahorros', icon: Coins },
   { path: '/dashboard', label: 'Dashboard', icon: BarChart3 },
+  { path: '/ingresos', label: 'Ingresos', icon: TrendingUp },
 ]
 
 function Layout() {
@@ -62,7 +64,7 @@ function Layout() {
 
       <nav className="fixed bottom-0 left-0 right-0 flex justify-center pb-4 pt-2 z-10 pointer-events-none">
         <div
-          className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2 pointer-events-auto"
+          className="flex items-center justify-center gap-1 rounded-2xl px-2 py-2 pointer-events-auto"
           style={{
             background: 'color-mix(in srgb, var(--color-surface) 85%, transparent)',
             backdropFilter: 'blur(24px) saturate(1.3)',
@@ -71,18 +73,18 @@ function Layout() {
             boxShadow: '0 8px 32px -4px rgba(0,0,0,0.15), 0 0 0 1px color-mix(in srgb, var(--color-border) 30%, transparent)',
           }}
         >
-          {tabs.slice(0, 2).map((tab) => {
+          {tabs.slice(0, 3).map((tab) => {
             const isActive = location.pathname === tab.path
             const Icon = tab.icon
             return (
               <button key={tab.path} onClick={() => navigate(tab.path)} aria-label={tab.label}
-                className="relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 active:scale-90 cursor-pointer"
+                className="relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 active:scale-90 cursor-pointer"
                 style={{
                   background: isActive ? 'var(--color-accent)' : 'transparent',
                   color: isActive ? '#ffffff' : 'var(--color-text-tertiary)',
                   boxShadow: isActive ? '0 4px 12px -2px var(--color-accent-glow)' : 'none',
                 }}>
-                <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
+                <Icon size={19} strokeWidth={isActive ? 2.2 : 1.8} />
               </button>
             )
           })}
@@ -96,18 +98,18 @@ function Layout() {
             <Plus size={24} color="#fff" strokeWidth={2.5} />
           </button>
 
-          {tabs.slice(2).map((tab) => {
+          {tabs.slice(3).map((tab) => {
             const isActive = location.pathname === tab.path
             const Icon = tab.icon
             return (
               <button key={tab.path} onClick={() => navigate(tab.path)} aria-label={tab.label}
-                className="relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 active:scale-90 cursor-pointer"
+                className="relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 active:scale-90 cursor-pointer"
                 style={{
                   background: isActive ? 'var(--color-accent)' : 'transparent',
                   color: isActive ? '#ffffff' : 'var(--color-text-tertiary)',
                   boxShadow: isActive ? '0 4px 12px -2px var(--color-accent-glow)' : 'none',
                 }}>
-                <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
+                <Icon size={19} strokeWidth={isActive ? 2.2 : 1.8} />
               </button>
             )
           })}
