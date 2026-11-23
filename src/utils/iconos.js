@@ -1,6 +1,6 @@
 import {
   ShoppingCart, Utensils, Car, Clapperboard, Zap, Bus, HeartPulse, GraduationCap, House, Tag,
-  Package, Briefcase, Repeat, CreditCard, Coins, Shirt, PawPrint, Plane, Gift, Smartphone,
+  Package, Briefcase, Repeat, CreditCard, Coins, Shirt, PawPrint, Plane, Gift, Smartphone, PiggyBank, DollarSign,
 } from 'lucide-react'
 
 // Coincidencia por palabra clave en el nombre de la categoría (las categorías las crea el usuario)
@@ -28,6 +28,8 @@ const TIPOS = {
   cuotas: [CreditCard, '#7c3aed'],
   sueldo: [Briefcase, '#16a34a'],
   ingreso: [Coins, '#16a34a'],
+  ahorro_ars: [PiggyBank, '#ea580c'],
+  ahorro_usd: [DollarSign, '#16a34a'],
 }
 
 export function estiloCategoria(nombre = '') {
