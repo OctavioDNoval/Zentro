@@ -8,12 +8,12 @@ import SettingsModal from './SettingsModal.jsx'
 import GastoDiarioModal from './GastoDiarioModal.jsx'
 
 const tabs = [
-  { path: '/estadisticas', label: 'Estadísticas', icon: PieChart },
+  { path: '/ingresos', label: 'Ingresos', icon: TrendingUp },
   { path: '/', label: 'Plantilla', icon: Wallet },
   { path: '/gastos', label: 'Gastos', icon: CreditCard },
   { path: '/ahorros', label: 'Ahorros', icon: Coins },
   { path: '/dashboard', label: 'Dashboard', icon: BarChart3 },
-  { path: '/ingresos', label: 'Ingresos', icon: TrendingUp },
+  { path: '/estadisticas', label: 'Estadísticas', icon: PieChart },
 ]
 
 function Layout() {
