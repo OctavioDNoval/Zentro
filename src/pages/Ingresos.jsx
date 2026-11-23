@@ -56,7 +56,6 @@ function Ingresos() {
     const monto = Number(ing.monto)
     await db.ingresos_efimeros.delete(ing.id)
     if (Number.isFinite(monto) && monto > 0) await actualizarTotal(-monto)
-    window.dispatchEvent(new CustomEvent('zentro:data-changed'))
   }
 
   const mesActual = `${meses[new Date().getMonth()]} ${new Date().getFullYear()}`

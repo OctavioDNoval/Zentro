@@ -68,7 +68,6 @@ function Gastos() {
     const monto = Number(g.monto)
     await db.gastos_diarios.delete(g.id)
     if (Number.isFinite(monto) && monto > 0) await actualizarTotal(monto)
-    window.dispatchEvent(new CustomEvent('zentro:data-changed'))
   }
 
   const gastosFiltrados = data.gastosDiarios.filter((g) => {
