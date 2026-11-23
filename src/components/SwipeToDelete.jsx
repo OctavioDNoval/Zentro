@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { Trash2 } from 'lucide-react'
 
-function SwipeToDelete({ children, onDelete, threshold = 80 }) {
+function SwipeToDelete({ children, onDelete, threshold = 80, rounded = true }) {
   const [offset, setOffset] = useState(0)
   const [swiping, setSwiping] = useState(false)
   const startX = useRef(0)
@@ -35,9 +35,9 @@ function SwipeToDelete({ children, onDelete, threshold = 80 }) {
   }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl">
+    <div className={`relative overflow-hidden ${rounded ? 'rounded-2xl' : ''}`}>
       <div
-        className="absolute inset-y-0 right-0 flex items-center justify-center w-16 rounded-r-2xl"
+        className={`absolute inset-y-0 right-0 flex items-center justify-center w-16 ${rounded ? 'rounded-r-2xl' : ''}`}
         style={{ background: 'var(--color-negative)' }}
       >
         <Trash2 size={18} color="#fff" />

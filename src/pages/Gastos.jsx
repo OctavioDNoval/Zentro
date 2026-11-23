@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Tag, Pencil, Search, X } from 'lucide-react'
+import { Plus, Tag, Search, X } from 'lucide-react'
 import db from '../db/index.js'
 import { actualizarTotal } from '../db/estado-cuenta.js'
 import { obtenerCotizacionBlue, convertirARS, formatearMonto } from '../db/moneda.js'
@@ -11,15 +11,12 @@ import CategoriaModal from '../components/CategoriaModal.jsx'
 import AnimatedNumber from '../components/AnimatedNumber.jsx'
 import { SkeletonCard } from '../components/Skeleton.jsx'
 import SwipeToDelete from '../components/SwipeToDelete.jsx'
-
-const formatearFecha = (s) => { if (!s) return ''; const [y, m, d] = s.split('T')[0].split('-'); return `${+d}/${+m}/${y}` }
+import GrupoFecha, { FilaMovimiento, Chip } from '../components/GrupoFecha.jsx'
+import IconoMovimiento from '../components/IconoMovimiento.jsx'
+import { estiloTipo } from '../utils/iconos.js'
+import { agruparPorFecha } from '../utils/fechas.js'
 
 const etiquetaTipo = { suscripcion: 'Suscripción', servicio: 'Servicio', cuotas: 'Cuotas' }
-const colorTipo = {
-  suscripcion: { bg: '#1e3a5f', text: '#60a5fa', border: '#2563eb' },
-  servicio: { bg: '#422006', text: '#fbbf24', border: '#d97706' },
-  cuotas: { bg: '#2e1065', text: '#a78bfa', border: '#7c3aed' },
-}
 
 function Gastos() {
   const [data, setData] = useState({ gastosDiarios: [], gastosFijos: [], categorias: [] })
@@ -124,34 +121,30 @@ function Gastos() {
             <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Sin gastos fijos</p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {data.gastosFijos.map((g, i) => {
-              const tc = colorTipo[g.tipo]
+          <div className="rounded-2xl border overflow-hidden animate-fade-in-up [&>*+*]:border-t [&>*+*]:border-[var(--color-border-subtle)]"
+            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+            {data.gastosFijos.map((g) => {
+              const { color } = estiloTipo(g.tipo)
               return (
-                <div key={g.id} className="card-base rounded-2xl px-4 py-3 flex justify-between items-center animate-fade-in-up cursor-pointer active:scale-[0.98]"
-                  style={{ animationDelay: `${i * 0.05}s` }}
-                  onClick={() => setEditGastoFijo(g)}>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-xl" style={{ background: 'var(--color-negative-light)' }}>
-                      <Pencil size={14} style={{ color: 'var(--color-negative)' }} />
+                <FilaMovimiento key={g.id} onClick={() => setEditGastoFijo(g)}
+                  icono={<IconoMovimiento tipo={g.tipo} />}
+                  titulo={g.nombre}
+                  subtitulo={
+                    <div className="flex items-center gap-1.5">
+                      <Chip color={color}>{etiquetaTipo[g.tipo] ?? 'Fijo'}</Chip>
+                      {g.moneda === 'USD' && <Chip>USD</Chip>}
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{g.nombre}</p>
-                      <div className="flex gap-1.5 mt-1">
-                        <span className="text-[10px] px-2 py-0.5 rounded-lg font-semibold"
-                          style={{ background: tc.bg, color: tc.text, border: `1px solid ${tc.border}30` }}>
-                          {etiquetaTipo[g.tipo]}
-                        </span>
-                        {g.tipo === 'cuotas' && (
-                          <span className="text-[10px] font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
-                            {g.cuotas_pagadas}/{g.total_cuotas}
-                          </span>
-                        )}
+                  }
+                  extra={g.tipo === 'cuotas' && g.total_cuotas > 0 && (
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'var(--color-bg-secondary)' }}>
+                        <div className="h-full rounded-full" style={{ width: `${Math.min((g.cuotas_pagadas / g.total_cuotas) * 100, 100)}%`, background: color }} />
                       </div>
+                      <span className="text-[10px] font-medium tabular-nums" style={{ color: 'var(--color-text-tertiary)' }}>{g.cuotas_pagadas}/{g.total_cuotas}</span>
                     </div>
-                  </div>
-                  <span className="text-sm font-bold" style={{ color: 'var(--color-negative)' }}><AnimatedNumber value={g.monto} format={(v) => formatearMonto(v, g.moneda)} /></span>
-                </div>
+                  )}
+                  monto={<AnimatedNumber value={g.monto} format={(v) => formatearMonto(v, g.moneda)} />}
+                  color="var(--color-negative)" />
               )
             })}
           </div>
@@ -216,24 +209,23 @@ function Gastos() {
             <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Sin resultados para "{busqueda}"</p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {gastosFiltrados.map((g, i) => (
-              <SwipeToDelete key={g.id} onDelete={() => eliminarGasto(g)}>
-                <button onClick={() => setEditGasto(g)}
-                  className="w-full text-left card-base rounded-2xl px-4 py-3 flex items-center gap-3 transition-all duration-200 cursor-pointer active:scale-[0.98] animate-fade-in-up"
-                  style={{ animationDelay: `${i * 0.05}s` }}>
-                  <div className="flex items-center justify-center w-8 h-8 rounded-xl shrink-0" style={{ background: 'var(--color-negative-light)' }}>
-                    <Pencil size={14} style={{ color: 'var(--color-negative)' }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>{g.concepto}</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                      {getCat(g.categoriaId)} · {formatearFecha(g.fecha)}
-                    </p>
-                  </div>
-                  <span className="text-sm font-bold shrink-0" style={{ color: 'var(--color-negative)' }}><AnimatedNumber value={g.monto} /></span>
-                </button>
-              </SwipeToDelete>
+          <div className="space-y-4">
+            {agruparPorFecha(gastosFiltrados).map((grupo, gi) => (
+              <GrupoFecha key={grupo.fecha} etiqueta={grupo.etiqueta} total={grupo.total} delay={gi * 0.05}>
+                {grupo.items.map((g) => {
+                  const cat = getCat(g.categoriaId)
+                  return (
+                    <SwipeToDelete key={g.id} rounded={false} onDelete={() => eliminarGasto(g)}>
+                      <FilaMovimiento onClick={() => setEditGasto(g)}
+                        icono={<IconoMovimiento categoria={cat} />}
+                        titulo={g.concepto}
+                        subtitulo={<span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{cat}</span>}
+                        monto={<>−<AnimatedNumber value={g.monto} /></>}
+                        color="var(--color-text)" />
+                    </SwipeToDelete>
+                  )
+                })}
+              </GrupoFecha>
             ))}
           </div>
         )}
