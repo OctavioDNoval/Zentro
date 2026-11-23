@@ -111,6 +111,37 @@ function Ahorros() {
       </ResumenMes>
 
       <section>
+        <EncabezadoSeccion titulo="Dólar hoy">
+          <BotonAgregar secundario icon={RefreshCw} onClick={cargarCotizaciones}>
+            {fetching ? 'Actualizando…' : 'Actualizar'}
+          </BotonAgregar>
+        </EncabezadoSeccion>
+        <div className="rounded-2xl border p-3" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+          <div className="grid grid-cols-4 gap-2">
+            {CASAS.map((casa) => {
+              const c = cotizaciones.find((x) => x.casa === casa)
+              const esBlue = casa === 'blue'
+              return (
+                <div key={casa} className="rounded-xl py-2.5 px-1 text-center"
+                  style={{
+                    background: esBlue ? 'var(--color-accent-light)' : 'var(--color-bg-secondary)',
+                    boxShadow: esBlue ? 'inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent)' : 'none',
+                  }}>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: esBlue ? 'var(--color-accent)' : 'var(--color-text-tertiary)' }}>{NOMBRES_CASA[casa]}</p>
+                  <p className="text-sm font-bold tabular-nums mt-0.5" style={{ color: 'var(--color-text)' }}>
+                    {c ? '$' + Math.round(Number(c.venta)).toLocaleString('es-AR') : '–'}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+          <p className="text-[10px] mt-2.5 px-1 font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+            Precio de venta{lastUpdated ? ` · actualizado ${formatearUltimaActualizacion(lastUpdated)}` : ''} · las conversiones usan el blue
+          </p>
+        </div>
+      </section>
+
+      <section>
         <EncabezadoSeccion titulo="Tus ahorros">
           <BotonAgregar onClick={() => setModalOpen(true)} />
         </EncabezadoSeccion>
@@ -143,37 +174,6 @@ function Ahorros() {
             })}
           </ListaCard>
         )}
-      </section>
-
-      <section>
-        <EncabezadoSeccion titulo="Dólar hoy">
-          <BotonAgregar secundario icon={RefreshCw} onClick={cargarCotizaciones}>
-            {fetching ? 'Actualizando…' : 'Actualizar'}
-          </BotonAgregar>
-        </EncabezadoSeccion>
-        <div className="rounded-2xl border p-3" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-          <div className="grid grid-cols-4 gap-2">
-            {CASAS.map((casa) => {
-              const c = cotizaciones.find((x) => x.casa === casa)
-              const esBlue = casa === 'blue'
-              return (
-                <div key={casa} className="rounded-xl py-2.5 px-1 text-center"
-                  style={{
-                    background: esBlue ? 'var(--color-accent-light)' : 'var(--color-bg-secondary)',
-                    boxShadow: esBlue ? 'inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent)' : 'none',
-                  }}>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: esBlue ? 'var(--color-accent)' : 'var(--color-text-tertiary)' }}>{NOMBRES_CASA[casa]}</p>
-                  <p className="text-sm font-bold tabular-nums mt-0.5" style={{ color: 'var(--color-text)' }}>
-                    {c ? '$' + Math.round(Number(c.venta)).toLocaleString('es-AR') : '–'}
-                  </p>
-                </div>
-              )
-            })}
-          </div>
-          <p className="text-[10px] mt-2.5 px-1 font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
-            Precio de venta{lastUpdated ? ` · actualizado ${formatearUltimaActualizacion(lastUpdated)}` : ''} · las conversiones usan el blue
-          </p>
-        </div>
       </section>
 
       <AhorroModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onSaved={cargarAhorros} />
